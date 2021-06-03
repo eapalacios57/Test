@@ -1,0 +1,4 @@
+com\qvision\trainingsite\modelos\ValidaUsuario.class
+com\qvision\trainingsite\controladores\GestionOperaciones.class
+com\qvision\trainingsite\controladores\GestionSesiones.class
+com\qvision\trainingsite\clases\Usuarios.class
