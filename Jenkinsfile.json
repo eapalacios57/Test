@@ -1,0 +1,38 @@
+{
+        "develop": {
+            "urlWlBirc": "t3://172.17.0.2:9005", 
+            "idUserANDPassWlBirc": "6aac505c-c2b2-4b33-b867-7b40f4744a24", 
+            "artifactNameWlBirc": "FACTURAELECTRONICA",
+            "domainWlBirc": "/u01/oracle/user_projects/domains/base_domain/bin",
+            "pathwlBirc": "/u01/oracle/user_projects/domains/base_domain/deploysJenkins/App/birc",
+            "clusterWlBirc": "AdminServer",                                                        
+            "serverWlSshBirc":'157.230.95.77',
+            "puertoWlSshBirc":'2222',
+            "idKeyWlSshBirc": "e7ef0615-c497-4e58-87e1-cc45170b8fef",
+            "extension":"war"
+    },
+        "qa": {
+            "urlWlBirc": "t3://172.17.0.2:9005", 
+            "idUserANDPassWlBirc": "6aac505c-c2b2-4b33-b867-7b40f4744a24", 
+            "artifactNameWlBirc": "FACTURAELECTRONICA",
+            "domainWlBirc": "/u01/oracle/user_projects/domains/base_domain/bin",
+            "pathwlBirc": "/u01/oracle/user_projects/domains/base_domain/deploysJenkins/App/birc",
+            "clusterWlBirc": "AdminServer",                                                        
+            "serverWlSshBirc":'134.122.115.26',
+            "puertoWlSshBirc":'2222',
+            "idKeyWlSshBirc": "e7ef0615-c497-4e58-87e1-cc45170b8fef",
+            "extension":"war"
+    },
+        "master": {
+            "urlWlBirc": "t3://172.17.0.2:9005", 
+            "idUserANDPassWlBirc": "6aac505c-c2b2-4b33-b867-7b40f4744a24", 
+            "artifactNameWlBirc": "FACTURAELECTRONICA",
+            "domainWlBirc": "/u01/oracle/user_projects/domains/base_domain/bin",
+            "pathwlBirc": "/u01/oracle/user_projects/domains/base_domain/deploysJenkins/App/birc",
+            "clusterWlBirc": "AdminServer",                                                        
+            "serverWlSshBirc":'161.35.116.76',
+            "puertoWlSshBirc":'2222',
+            "idKeyWlSshBirc": "e7ef0615-c497-4e58-87e1-cc45170b8fef",
+            "extension":"war"
+    }
+}
