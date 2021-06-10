@@ -31,13 +31,6 @@ pipeline {
                echo "SonarQube analysis";              
            }
         }
-        stage("Quality gate") {
-            steps {
-                script {
-                    last_stage = env.STAGE_NAME
-                }
-                waitForQualityGate abortPipeline: true
-             }
             /*steps {
                 script {
                     echo "Quality gate";
