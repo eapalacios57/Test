@@ -12,7 +12,7 @@ pipeline {
     stages {   
         stage('SonarQube analysis') {
            agent any
-           }  
+           
            //when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } }
            steps {
                 sh './pipelineFiles/test/test.sh mvn test'
