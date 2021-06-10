@@ -38,12 +38,12 @@ pipeline {
                 }
                 waitForQualityGate abortPipeline: true
              }*/
-            steps {
+            /*steps {
                 script {
                     echo "Quality gate";
                 }
-             }
-        
+             }*/
+    
         stage ("Revisión GC"){
             when { anyOf { branch 'qa'; branch 'stage'; branch 'master' } }
             steps{
