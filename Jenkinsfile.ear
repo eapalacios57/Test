@@ -9,7 +9,7 @@ pipeline {
     environment {
         statusCode = '';
     }  
-    stages {
+    stages {/*
         stage('SonarQube analysis') {
            agent {
                 label 'nodejenkinsjdk11' 
@@ -43,7 +43,7 @@ pipeline {
                     echo "Quality gate";
                 }
              }
-        }
+        
         stage ("Revisión GC"){
             when { anyOf { branch 'qa'; branch 'stage'; branch 'master' } }
             steps{
