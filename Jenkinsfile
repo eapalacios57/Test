@@ -10,7 +10,7 @@ pipeline {
         statusCode = '';
     }  
     stages {   
-        stage('SonarQube analysis') {
+        /*stage('SonarQube analysis') {
            agent any
            
            //when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } }
@@ -44,7 +44,7 @@ pipeline {
                     last_stage = env.STAGE_NAME
                 }
                 waitForQualityGate abortPipeline: true
-             }
+             }*/
             /*steps {
                 script {
                     echo "Quality gate";
