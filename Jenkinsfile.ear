@@ -9,7 +9,7 @@ pipeline {
     environment {
         statusCode = '';
     }  
-    stages {/*
+    stages {
         stage('SonarQube analysis') {
            agent {
                 label 'nodejenkinsjdk11' 
@@ -18,10 +18,10 @@ pipeline {
                script {
                    last_stage = env.STAGE_NAME
                    def SCANNERHOME  = tool 'sonar-scanner'
-                   def projectKey="BIRC-TEST-DEPLOY-EAR-${BRANCH_NAME}"
+                   //def projectKey="BIRC-TEST-DEPLOY-EAR-${BRANCH_NAME}"
                    def organization='segurosbolivar'
                    def pathSourceSonar='Back/src/main/java/'
-                   def sonarURL='https://sonarcloud.io'
+                   def sonarURL='192.168.0.26:9000'
                    withSonarQubeEnv('SonarCloud'){
                          sh """
                            ${SCANNERHOME}/bin/sonar-scanner -X -Dsonar.java.binaries=. -Dsonar.projectKey=${projectKey} -Dsonar.organization=${organization} -Dsonar.sources=${pathSourceSonar} -Dsonar.host.url=${sonarURL}
@@ -32,12 +32,12 @@ pipeline {
            }
         }
         stage("Quality gate") {
-            /*steps {
+            steps {
                 script {
                     last_stage = env.STAGE_NAME
                 }
                 waitForQualityGate abortPipeline: true
-             }*/
+             }
             /*steps {
                 script {
                     echo "Quality gate";
