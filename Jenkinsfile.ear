@@ -20,7 +20,7 @@ pipeline {
                    def organization='segurosbolivar'
                    def pathSourceSonar='Back/src/main/java/'
                    def sonarURL='192.168.0.26:9000'
-                   withSonarQubeEnv('SonarCloud'){
+                   withSonarQubeEnv('sonar-scanner'){
                          sh """
                            ${SCANNERHOME}/bin/sonar-scanner -X -Dsonar.java.binaries=. -Dsonar.projectKey=${projectKey} -Dsonar.organization=${organization} -Dsonar.sources=${pathSourceSonar} -Dsonar.host.url=${sonarURL}
                          """
