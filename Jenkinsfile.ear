@@ -43,7 +43,7 @@ pipeline {
                     echo "Quality gate";
                 }
              }*/
-    
+        /*
         stage ("Revisión GC"){
             when { anyOf { branch 'qa'; branch 'stage'; branch 'master' } }
             steps{
@@ -63,7 +63,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
         stage("Build") {
             when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } }
             steps {
