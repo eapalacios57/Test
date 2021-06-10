@@ -23,9 +23,9 @@ pipeline {
                    def sonarURL='192.168.0.26:9000'
                    withSonarQubeEnv('SonarQube8.9'){
                          sh """
-                           ${SCANNERHOME}/bin/sonar-scanner -X -Dsonar.java.binaries=. -Dsonar.projectKey=${projectKey} -Dsonar.organization=${organization} -Dsonar.sources=${pathSourceSonar} -Dsonar.host.url=${sonarURL}
+                           ${SCANNERHOME}/bin/sonar-scanner -X -Dsonar.java.binaries=. -Dsonar.projectKey=${projectKey}  -Dsonar.sources=${pathSourceSonar} -Dsonar.host.url=${sonarURL}
                          """
-                   }
+        
                }
                echo "SonarQube analysis";              
            }
