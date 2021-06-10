@@ -15,7 +15,7 @@ pipeline {
            steps {
                script {
                    last_stage = env.STAGE_NAME
-                   //def SCANNERHOME  = tool 'sonar-scanner'
+                   def SCANNERHOME  = tool 'sonar-scanner'
                    def SCANNERHOME = tool name: 'sonar-scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
                    //def projectKey="BIRC-TEST-DEPLOY-EAR-${BRANCH_NAME}"
                    def organization='segurosbolivar'
@@ -23,9 +23,9 @@ pipeline {
                    def sonarURL='192.168.0.26:9000'
                    withSonarQubeEnv('SonarQube8.9'){
                          sh """
-                           ${SCANNERHOME}/bin/sonar-scanner -X -Dsonar.java.binaries=. -Dsonar.projectKey=${projectKey} -Dsonar.organization=${organization} -Dsonar.sources=${pathSourceSonar} -Dsonar.host.url=${sonarURL}
+                           ${SCANNERHOME}/bin/sonar-scanner -X -Dsonar.java.binaries=. -Dsonar.projectKey=${projectKey} -Dsonar.sources=${pathSourceSonar} -Dsonar.host.url=${sonarURL}
                          """
-        
+                   }
                }
                echo "SonarQube analysis";              
            }
