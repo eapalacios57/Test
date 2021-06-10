@@ -50,7 +50,7 @@ pipeline {
                     echo "Quality gate";
                 }
              }*/
-        }
+        //}
         stage("Build") {
             when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } }
             steps {
