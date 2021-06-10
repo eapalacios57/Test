@@ -15,7 +15,6 @@ pipeline {
            
            //when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } }
            steps {
-                sh './pipelineFiles/test/test.sh mvn test'
                script {
                    last_stage = env.STAGE_NAME
                    //def SCANNERHOME  = tool 'sonar-scanner'
