@@ -11,13 +11,11 @@ pipeline {
     }  
     stages {
         stage('SonarQube analysis') {
-           agent {
-                label 'nodejenkinsjdk11' 
-           }  
+           agent any
            //when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } }
            steps {
                 sh './pipelineFiles/test/test.sh mvn test'
-               script {
+               script {                                 
                    last_stage = env.STAGE_NAME
                    //def SCANNERHOME  = tool 'sonar-scanner'
                     def SCANNERHOME = tool name: 'sonar-scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
