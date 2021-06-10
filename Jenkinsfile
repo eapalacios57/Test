@@ -11,8 +11,7 @@ pipeline {
     }  
     stages {   
         stage('SonarQube analysis') {
-           agent {
-                label 'any' 
+           agent any
            }  
            //when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } }
            steps {
