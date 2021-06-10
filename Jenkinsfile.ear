@@ -18,7 +18,7 @@ pipeline {
                    //def SCANNERHOME  = tool 'sonar-scanner'
                    def SCANNERHOME = tool name: 'sonar-scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
                    //def projectKey="BIRC-TEST-DEPLOY-EAR-${BRANCH_NAME}"
-                   def organization='segurosbolivar'
+                   //def organization='segurosbolivar'
                    def pathSourceSonar='Back/src/main/java/'
                    def sonarURL='192.168.0.26:9000'
                    withSonarQubeEnv('SonarQube8.9'){
