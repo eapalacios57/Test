@@ -11,9 +11,7 @@ pipeline {
     }  
     stages {
         stage('SonarQube analysis') {
-           agent {
-                label 'nodejenkinsjdk11' 
-           }
+           agent any
            steps {
                script {
                    last_stage = env.STAGE_NAME
