@@ -69,7 +69,10 @@ pipeline {
             steps {
                 echo "build Pendiente Definición"
             }
-        }/*
+        }
+        }
+        }
+        /*
         stage('Set variables'){
             agent {
                 label 'master' 
@@ -332,8 +335,9 @@ pipeline {
                }
            }
        }*/
-    }
-}
+    
+    //}
+//}
     /*post {
         always{
             echo "Enviar logs...";
