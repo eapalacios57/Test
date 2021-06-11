@@ -14,7 +14,6 @@ pipeline {
            agent any
            //when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } }
            steps {
-                sh './pipelineFiles/test/test.sh mvn compile'
                script {                                 
                    last_stage = env.STAGE_NAME
                    //def SCANNERHOME  = tool 'sonar-scanner'
@@ -24,7 +23,7 @@ pipeline {
                    def projectKey='birc_test'
                    def organization='segurosbolivar'
                    def pathSourceSonar='Back/src/main/java/'
-                   def sonarURL='http://192.168.0.26:9000'
+                   def sonarURL='http://192.168.0.30:9000'
                    def jacoco_reportPaths='target/jacoco.exec'
                    def junit_reportPaths='target/surefire-reports'
 
