@@ -75,6 +75,7 @@
                     <goals>
                       <goal>check</goal>
                     </goals>
+                </executions>    
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
