@@ -54,30 +54,27 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.1</version>
-                <configuration>
-                    <skip>false</skip>
-                    <destFile>${basedir}/target/jacoco.exec</destFile>
-                </configuration>
+                <version>0.8.3</version>
                 <executions>
-                    <execution>
-                        <id>prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <configuration>
-                            <dataFile>${basedir}/target/jacoco.exec</dataFile>
-                            <outputDirectory>${basedir}/target</outputDirectory>
-                        </configuration>
-                        <id>report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                  <execution>
+                    <id>coverage-initialize</id>
+                    <goals>
+                      <goal>prepare-agent</goal>
+                    </goals>
+                  </execution>
+                  <execution>
+                    <id>coverage-report</id>
+                    <phase>post-integration-test</phase>
+                    <goals>
+                      <goal>report</goal>
+                    </goals>
+                  </execution>
+                  <!-- Threshold -->
+                  <execution>
+                    <id>coverage-check</id>
+                    <goals>
+                      <goal>check</goal>
+                    </goals>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
