@@ -54,23 +54,30 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.3</version>
+                <version>0.8.1</version>
+                <configuration>
+                    <skip>false</skip>
+                    <destFile>${basedir}/target/jacoco.exec</destFile>
+                </configuration>
                 <executions>
-                  <execution>
-                    <id>report-aggregate</id>
-                    <phase>verify</phase>
-                    <goals>
-                      <goal>report-aggregate</goal>
-                    </goals>
-                  </execution>
-                  <execution>
-                    <id>prepare-agent</id>
-                    <goals>
-                      <goal>prepare-agent</goal>
-                    </goals>
-                    <phase>pre-integration-test</phase>
-                  </execution>
-                </executions>    
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <configuration>
+                            <dataFile>${basedir}/target/jacoco.exec</dataFile>
+                            <outputDirectory>${basedir}/target</outputDirectory>
+                        </configuration>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
