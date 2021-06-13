@@ -57,17 +57,21 @@
                 <version>0.8.3</version>
                 <executions>
                   <execution>
-                    <id>coverage-initialize</id>
+                    <id>prepare-unit-tests</id>
+                    <phase>initialize</phase>
                     <goals>
                       <goal>prepare-agent</goal>
                     </goals>
                   </execution>
                   <execution>
-                    <id>coverage-report</id>
-                    <phase>post-integration-test</phase>
+                    <id>prepare-agent</id>
                     <goals>
-                      <goal>report</goal>
+                      <goal>prepare-agent</goal>
                     </goals>
+                    <phase>pre-integration-test</phase>
+                    <configuration>
+					  <propertyName>itCoverageAgent</propertyName>
+					</configuration>
                   </execution>
                   <!-- Threshold -->
                   <execution>
