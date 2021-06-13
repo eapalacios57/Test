@@ -8,8 +8,6 @@
     <packaging>war</packaging>
     <groupId>com.testcoveragereport</groupId>
 	<artifactId>test-coverage-report-jacoco</artifactId>
-	<packaging>pom</packaging>
-	<version>1.0.0-SNAPSHOT</version>
 	<description>Test Coverage - jacoco demo</description>
 
     <modules>
