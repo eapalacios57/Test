@@ -73,13 +73,6 @@
 					  <propertyName>itCoverageAgent</propertyName>
 					</configuration>
                   </execution>
-                  <!-- Threshold -->
-                  <execution>
-                    <id>coverage-check</id>
-                    <goals>
-                      <goal>check</goal>
-                    </goals>
-                  </execution>
                 </executions>    
             </plugin>
             <plugin>
