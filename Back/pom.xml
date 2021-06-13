@@ -57,10 +57,10 @@
                 <version>0.8.3</version>
                 <executions>
                   <execution>
-                    <id>prepare-unit-tests</id>
-                    <phase>initialize</phase>
+                    <id>report-aggregate</id>
+                    <phase>verify</phase>
                     <goals>
-                      <goal>prepare-agent</goal>
+                      <goal>report-aggregate</goal>
                     </goals>
                   </execution>
                   <execution>
@@ -69,9 +69,6 @@
                       <goal>prepare-agent</goal>
                     </goals>
                     <phase>pre-integration-test</phase>
-                    <configuration>
-					  <propertyName>itCoverageAgent</propertyName>
-					</configuration>
                   </execution>
                 </executions>    
             </plugin>
