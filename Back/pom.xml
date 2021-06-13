@@ -8,7 +8,7 @@
     <packaging>war</packaging>
 
     <modules>
-		<module>app</module>
+		<module></module>
 	</modules>
 
     <name>TrainingSite</name>
