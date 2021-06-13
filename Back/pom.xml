@@ -6,9 +6,6 @@
     <artifactId>TrainingSite</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
-    <groupId>com.testcoveragereport</groupId>
-	<artifactId>test-coverage-report-jacoco</artifactId>
-	<description>Test Coverage - jacoco demo</description>
 
     <modules>
 		<module>Back</module>
