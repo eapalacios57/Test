@@ -24,7 +24,7 @@ pipeline {
                    def organization='segurosbolivar'
                    def pathSourceSonar='Back/src/main/java/'
                    def sonarURL='http://192.168.0.32:9000'
-                   def jacoco_reportPaths='target/'
+                   def jacoco_reportPaths='target/jacoco.xml'
                    def junit_reportPaths='target/surefire-reports'
 
                    withSonarQubeEnv('SonarQube8.9'){
