@@ -69,7 +69,7 @@
                     <execution>
                         <configuration>
                             <dataFile>${basedir}/target/jacoco.exec</dataFile>
-                            <outputDirectory>${basedir}/target/site/jacoco/</outputDirectory>
+                            <outputDirectory>${basedir}/target/site/jacoco-it/</outputDirectory>
                         </configuration>
                         <id>report</id>
                         <phase>test</phase>
