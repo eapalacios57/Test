@@ -70,7 +70,6 @@
                         <configuration>
                             <destFile>${sonar.jacoco.reportPaths}</destFile>
                             <dataFile>${basedir}/target/jacoco.exec</dataFile>
-                            <outputDirectory>${basedir}/target/site/jacoco-it/</outputDirectory>
                         </configuration>
                         <id>report</id>
                         <phase>test</phase>
