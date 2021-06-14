@@ -54,7 +54,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.3</version>
+                <version>0.8.5</version>
                 <configuration>
                     <skip>false</skip>
                     <destFile>${basedir}/target/jacoco.exec</destFile>
@@ -76,6 +76,9 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <properties>
+                            <sonar.coverage.jacoco.xmlReportPaths>${basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+                        </properties>
                     </execution>
                 </executions>
             </plugin>
