@@ -24,16 +24,17 @@ pipeline {
                    def organization='segurosbolivar'
                    def pathSourceSonar='Back/src/main/java/'
                    def sonarURL='http://192.168.0.32:9000'
-                   def jacoco_reportPaths='target/site/jacoco/*'
                    def junit_reportPaths='target/surefire-reports'
+                   def jacoco_reportPaths='target/site/jacoco/*'
+                   
 
                    withSonarQubeEnv('SonarQube8.9'){
                          sh """
-                           ${SCANNERHOME}/bin/sonar-scanner -X -Dsonar.java.binaries=. -Dsonar.projectName=${projectName} -Dsonar.projectKey=${projectKey} -Dsonar.organization=${organization} -Dsonar.sources=${pathSourceSonar} -Dsonar.host.url=${sonarURL} -Dsonar.jacoco.reportPaths=${jacoco_reportPaths} -Dsonar.junit.reportPaths=${junit_reportPaths}
+                           ${SCANNERHOME}/bin/sonar-scanner -X -Dsonar.java.binaries=. -Dsonar.projectName=${projectName} -Dsonar.projectKey=${projectKey} -Dsonar.organization=${organization} -Dsonar.sources=${pathSourceSonar} -Dsonar.host.url=${sonarURL}  -Dsonar.junit.reportPaths=${junit_reportPaths} -Dsonar.jacoco.reportPaths=${jacoco_reportPaths}
                          """
                    }
                }
-               echo "SonarQube analysis";              
+               echo "SonarQube analysis";             
            }
         }
             /*steps {
