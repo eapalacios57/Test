@@ -24,7 +24,7 @@ pipeline {
                    def organization='segurosbolivar'
                    def pathSourceSonar='Back/src/main/java/'
                    def sonarURL='http://192.168.0.38:9000'
-                   def junit_reportPaths='target/surefire-reports/TEST-com.qvision.trainingsite.clases.UsuariosTest.xml'
+                   def junit_reportPaths='target/surefire-reports/'
                    //def jacoco_reportPaths=${project.reporting.outputDirectory}'/target/site/jacoco/jacoco.xml'
                    
 
