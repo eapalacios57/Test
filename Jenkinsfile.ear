@@ -20,7 +20,7 @@ pipeline {
                     def SCANNERHOME = tool 'sonar-scanner'
                    //def projectKey="BIRC-TEST-DEPLOY-EAR-${BRANCH_NAME}"
                    def projectName='segurosbolivar_birc'
-                   //def projectKey='birc_test'
+                   def projectKey='birc_test'
                    def organization='segurosbolivar'
                    def pathSourceSonar='Back/src/main/java/'
                    def sonarURL='http://192.168.0.38:9000'
