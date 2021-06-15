@@ -17,7 +17,7 @@ pipeline {
                script {                                 
                    last_stage = env.STAGE_NAME
                    //def SCANNERHOME  = tool 'sonar-scanner'
-                    def SCANNERHOME = tool name: 'sonar-scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                    def SCANNERHOME = tool 'sonar-scanner'
                    //def projectKey="BIRC-TEST-DEPLOY-EAR-${BRANCH_NAME}"
                    def projectName='segurosbolivar_birc'
                    def projectKey='birc_test'
