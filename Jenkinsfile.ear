@@ -30,7 +30,7 @@ pipeline {
 
                    withSonarQubeEnv('SonarQube8.9'){
                          sh """
-                           ${SCANNERHOME}/bin/sonar-scanner -X -Dsonar.java.binaries=. -Dsonar.projectName=${projectName} -Dsonar.projectKey=${projectKey} -Dsonar.organization=${organization} -Dsonar.sources=${pathSourceSonar} -Dsonar.host.url=${sonarURL} -Dsonar.core.codeCoveragePlugin='jacoco' -Dsonar.junit.reportPaths=${junit_reportPaths} -Dsonar.coverage.jacoco.xmlReportPaths=${project.reporting.outputDirectory}/target/site/jacoco/jacoco.xml
+                           ${SCANNERHOME}/bin/sonar-scanner -X -Dsonar.java.binaries=. -Dsonar.projectName=${projectName} -Dsonar.projectKey=${projectKey} -Dsonar.organization=${organization} -Dsonar.sources=${pathSourceSonar} -Dsonar.host.url=${sonarURL} -Dsonar.core.codeCoveragePlugin='jacoco' -Dsonar.junit.reportPaths=${junit_reportPaths} -Dsonar.coverage.jacoco.xmlReportPaths=/target/site/jacoco/jacoco.xml
                          """
                    }
                }
