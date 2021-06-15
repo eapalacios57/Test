@@ -49,6 +49,7 @@
                 <version>2.3</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <argLine>${argLine} -Dfile.encoding=UTF-8</argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -58,23 +59,26 @@
             <plugin>
             <groupId>org.jacoco</groupId>
                <artifactId>jacoco-maven-plugin</artifactId>
-               <configuration>
-                   <append>true</append>
-               </configuration>
-               <executions>
-                   <execution>
-                       <goals>
-                           <goal>prepare-agent</goal>
-                       </goals>
-                   </execution>
-                   <execution>
-                       <id>post-unit-test</id>
-                       <phase>test</phase>
-                       <goals>
-                           <goal>report</goal>
-                       </goals>
-                   </execution>
-               </executions>    
+              <configuration>
+				<skip>false</skip>
+			</configuration>
+			<executions>
+				<execution>
+					<goals>
+						<goal>prepare-agent</goal>
+					</goals>
+				</execution>
+				<execution>
+					<configuration>
+						<outputDirectory>${basedir}/target/coverage-reports</outputDirectory>
+					</configuration>
+					<id>report</id>
+					<phase>test</phase>
+					<goals>
+						<goal>report</goal>
+					</goals>
+				</execution>
+			</executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
