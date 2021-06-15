@@ -29,7 +29,7 @@ pipeline {
 
                    withSonarQubeEnv('SonarQube8.9'){
                          sh """
-                           ${SCANNERHOME}/bin/sonar-scanner -X -Dsonar.java.binaries=. -Dsonar.projectName=${projectName} -Dsonar.projectKey=${projectKey} -Dsonar.organization=${organization} -Dsonar.sources=${pathSourceSonar} -Dsonar.host.url=${sonarURL} -Dsonar.coverage.jacoco.xmlReportPaths=${jacoco_reportPaths} -Dsonar.java.libraries='/var/jenkins_home/.m2/repository/org/projectlombok/lombok/1.18.6/lombok-1.18.6.jar' 
+                           ${SCANNERHOME}/bin/sonar-scanner -X -Dsonar.java.binaries=. -Dsonar.projectName=${projectName} -Dsonar.projectKey=${projectKey} -Dsonar.organization=${organization} -Dsonar.sources=${pathSourceSonar} -Dsonar.host.url=${sonarURL} -Dsonar.coverage.jacoco.xmlReportPaths=${jacoco_reportPaths}
                          """
                    }
                }
