@@ -24,14 +24,14 @@ pipeline {
                    def organization='segurosbolivar'
                    def pathSourceSonar='Back/src/main/java/'
                    def sonarURL='http://192.168.0.50:9000'
-                   //def junit_reportPaths='target/surefire-reports/'
+                   def junit_reportPaths='Back/target/surefire-reports/'
                    def report_path='Back/target/jacoco.exec'
                    def jacoco_reportPaths='Back/target/jacoco.xml'
                    
 
                    withSonarQubeEnv('SonarQube8.9'){
                          sh """
-                           ${SCANNERHOME}/bin/sonar-scanner -X -Dsonar.java.binaries=. -Dsonar.projectName=${projectName} -Dsonar.projectKey=${projectKey} -Dsonar.organization=${organization} -Dsonar.sources=${pathSourceSonar} -Dsonar.host.url=${sonarURL} -Dsonar.jacoco.reportPaths=${report_path} -Dsonar.coverage.jacoco.xmlReportPaths=${jacoco_reportPaths} -Dsonar.scanner.force-deprecated-java-version=true
+                           ${SCANNERHOME}/bin/sonar-scanner -X -Dsonar.java.binaries=. -Dsonar.projectName=${projectName} -Dsonar.projectKey=${projectKey} -Dsonar.organization=${organization} -Dsonar.sources=${pathSourceSonar} -Dsonar.host.url=${sonarURL} -Dsonar.jacoco.reportPaths=${report_path} -Dsonar.coverage.jacoco.xmlReportPaths=${jacoco_reportPaths}  -Dsonar.junit.reportPaths=${junit_reportPaths} -Dsonar.scanner.force-deprecated-java-version=true
                          """
                    }
                }
