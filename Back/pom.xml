@@ -79,9 +79,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <sonar.coverage.jacoco.xmlReportPaths>
-                ${basedir}/target/jacoco.xml
-            </sonar.coverage.jacoco.xmlReportPaths>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
