@@ -337,7 +337,7 @@ pipeline {
                }
            }
        }*/
-    }
+    
 
     post {
         always{
@@ -374,5 +374,6 @@ pipeline {
                 }
             }
         }         
+    }
     }
 }
