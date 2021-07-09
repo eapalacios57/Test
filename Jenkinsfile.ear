@@ -349,7 +349,7 @@ pipeline {
               withCredentials([string(credentialsId: 'userAWS', variable: 'userAws'), string(credentialsId: 'keyAWS', variable: 'passaws')]) {
                 // some block
                      aws s3 ls s3://dockerprueba               
-             }
+             
             cleanWs();
         }
         //Manejo de las execepciones con envio de notificacion por medio de slack  segun del status que coresponda.
