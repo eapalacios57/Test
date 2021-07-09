@@ -7,45 +7,44 @@ pipeline {
             )
     }
     environment {
+        ENV_FILE="$JOB_BASE_NAME";
         statusCode = '';
     }  
+    //Se realiza analisis de codigo estatico y se envian los reportes de las pruebas unitarias y de cobertura.
     stages {
-        stage('SonarQube analysis') {
-           agent any
-           //when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } }
+        /*stage('SonarQube analysis') {
+           agent {
+                label 'nodejenkinsjdk11' 
+           }
            steps {
-               script {                                 
+               script {
                    last_stage = env.STAGE_NAME
-                   //def SCANNERHOME  = tool 'sonar-scanner'
-                    def SCANNERHOME = tool 'sonar-scanner'
-                   //def projectKey="BIRC-TEST-DEPLOY-EAR-${BRANCH_NAME}"
-                   //def projectName='segurosbolivar_birc'
-                   //def projectKey='birc_test'
-                   //def organization='segurosbolivar'
-                   //def pathSourceSonar='Back/src/main/java/'
-                   //def sonarURL='http://192.168.0.50:9000'
-                   //def junit_reportPaths='Back/target/surefire-reports'
-                   //def report_path='Back/target/jacoco.exec'
-                   //def jacoco_reportPaths='Back/target/jacoco.xml'
-                   
-
-                   withSonarQubeEnv('SonarQube8.9'){
+                   def SCANNERHOME = tool name: 'sonar-scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                   withSonarQubeEnv('SonarCloud'){
                          sh """
                            ${SCANNERHOME}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.projectVersion=0.${BUILD_NUMBER}
                          """
                    }
-               }
-               echo "SonarQube analysis";             
+               }*
+               echo "SonarQube analysis";              
            }
-        }
+        }*/
+        stage("Quality gate") {
             /*steps {
+                script {
+                    last_stage = env.STAGE_NAME
+                }
+                waitForQualityGate abortPipeline: true
+             }*/
+            steps {
                 script {
                     echo "Quality gate";
                 }
-             }*/
-        /*
+             }
+        }
+        //Revisin y aprobación por el gestor de la configuracion dependiendo de la rama.
         stage ("Revisión GC"){
-            when { anyOf { branch 'qa'; branch 'stage'; branch 'master' } }
+            when { anyOf { branch 'devops'; branch 'stage'; branch 'master' } }
             steps{
                 script{
                     try {
@@ -63,22 +62,20 @@ pipeline {
                     }
                 }
             }
-        }*/
+        }
+        //Pendiente por definicion
         stage("Build") {
             when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } }
             steps {
                 echo "build Pendiente Definición"
             }
         }
-        }
-        }
-
-        /*
+        //Setea las variables almacenas en el arhivo .JSON
         stage('Set variables'){
             agent {
                 label 'master' 
             }
-            when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
+            when { anyOf { branch 'devops'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
             steps{
                 script{
                    JENKINS_FILE = readJSON file: 'Jenkinsfile.json';
@@ -93,25 +90,14 @@ pipeline {
                    idKeyWlSshBirc = JENKINS_FILE[BRANCH_NAME]['idKeyWlSshBirc'];
                    extension = JENKINS_FILE[BRANCH_NAME]['extension'];
                 }
-                withCredentials([
-                    file(
-                        credentialsId: "${idKeyWlSshBirc}",
-                        variable: 'KeyWlSshBirc'), 
-                    usernamePassword(
-                        credentialsId: "${idUserANDPassWlBirc}", 
-                        usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
-                ]){ 
-                   sh """
-                       sh pipelineFiles/SetVariables/env.sh ${urlWlBirc} ${userwlBirc} ${passwlBirc} ${artifactNameWlBirc} ${domainWlBirc} ${pathwlBirc} ${clusterWlBirc} ${serverWlSshBirc} ${puertoWlSshBirc} ${KeyWlSshBirc} ${extension}
-                   """
-                }
             }
        }
+       //Detiene la aplicación
        stage('Stop App'){
            agent {
                 label 'master' 
            }                
-           when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
+           when { anyOf { branch 'devops'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
            steps {
                 catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
                      withCredentials([
@@ -123,11 +109,16 @@ pipeline {
                             usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
                      ]){
                          sh """
-                             ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} 'sh ${pathwlBirc}/Shell/StopApp/StopApp.sh' ${JOB_BASE_NAME}
-                         """
+                            #Subir todos los manejados o Nodos si estan caidos
+                            ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} nohup ./startNodeManager.sh > nodemanager.log 2>&1 &"
+                            #Habilitar programa con el script setDomainEnv.sh y detener el artefacto con el nombre de este.
+                            ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -stop -name ${artifactNameWlBirc}"
+                            """
+                            
                      }
                 }
            }
+           //Mantener el estado del stage anterior
            post {
                 success {
                     println "Stage Stop App <<<<<< success >>>>>>"
@@ -149,12 +140,14 @@ pipeline {
                 }
            }
        }
+       // Anular despligue
        stage('Undeploy'){
            agent {
                 label 'master' 
-           }     
-           when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
+           }
+           when { anyOf { branch 'devops'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
            steps{
+               //Manejo del status code de este stage
                 catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
                     withCredentials([
                         file(
@@ -164,11 +157,12 @@ pipeline {
                             credentialsId: "${idUserANDPassWlBirc}",
                             usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
                     ]){
-                        script{
+                        script{                           
                              echo "Estatus Code Stage Anterior(Stop App): ${statusCode}";
                              if( statusCode == 'success' ){
                                 sh """
-                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} 'sh ${pathwlBirc}/Shell/Undeploy/Undeploy.sh' ${JOB_BASE_NAME}
+                                    #Detener la aplicacion con el nombre del artefacto
+                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl $urlWlBirc -username ${userwlBirc} -password $passwlBirc -undeploy -name ${artifactNameWlBirc} -targets ${clusterWlBirc} -usenonexclusivelock -graceful -ignoresessions"
                                 """
                              }
                              if( statusCode == 'failure' || statusCode == 'unstable' ){
@@ -192,7 +186,8 @@ pipeline {
                         ]){
                         echo "Copy ear to Server Web Logic";
                         sh """
-                            scp -i ${KeyWlSshBirc} -P ${puertoWlSshBirc} Despliegue/${artifactNameWlBirc}.${extension} oracle@${serverWlSshBirc}:${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME}
+                            #Copiar el artefacto hacia el servidor weblogic.
+                            scp -i ${KeyWlSshBirc} -P ${puertoWlSshBirc} Despliegue/${artifactNameWlBirc}.${extension} oracle@${serverWlSshBirc}:${pathwlBirc}/DeploysTemp/${BRANCH_NAME}
                         """
                   }                   
                }
@@ -209,7 +204,8 @@ pipeline {
                             if( statusCode == 'success' ){
                                 echo "Start App";
                                 sh """
-                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} 'sh ${pathwlBirc}/Shell/StartApp/Start.sh' ${JOB_BASE_NAME}
+                                    #Inicializa la aplicación como estaba en el stage anterior
+                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -start -name ${artifactNameWlBirc}"
                                 """  
                             }                           
                             statusCode='failure';
@@ -222,8 +218,9 @@ pipeline {
            agent {
                 label 'master' 
            }          
-           when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
+           when { anyOf { branch 'devops'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
            steps{
+               //Manejo del status code de este stage
                catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
                     withCredentials([
                          file(
@@ -237,7 +234,8 @@ pipeline {
                                 echo "Estatus Code Stage Anterior (Undeploy): ${statusCode}";
                                 if( statusCode == 'success' ){
                                     sh"""
-                                        ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} 'sh ${pathwlBirc}/Shell/Deploy/Deploy.sh' ${JOB_BASE_NAME}
+                                        #Inicia la aplicacion con el nuevo artefacto
+                                        ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -deploy -source ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension} -targets ${clusterWlBirc} -usenonexclusivelock"
                                     """
                                 }
                                 if( statusCode == 'failure' || statusCode == 'unstable' ){
@@ -257,7 +255,10 @@ pipeline {
                     withCredentials([file(credentialsId: "${idKeyWlSshBirc}",variable: 'KeyWlSshBirc')]){                    
                             echo "backup ";
                             sh """
-                                ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} 'sh ${pathwlBirc}/Shell/Backup/backupEar.sh' ${JOB_BASE_NAME}
+                                #Backup del artefacto que se estaba ejecutando.
+                                ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${pathwlBirc}/Deploy/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension} ${artifactNameWlBirc}_`date +"%Y-%m-%d-%Y_%H:%M"`.${extension} && mv * ${pathwlBirc}/DeploysHistory/${JOB_BASE_NAME}"
+                                ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension}  ${pathwlBirc}/Deploy/${JOB_BASE_NAME}"
+                               
                             """
                         }
                 }
@@ -278,21 +279,21 @@ pipeline {
                                 """
                                 echo "2. desplegar de la carpeta deploy";
                                 sh """
-                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} 'sh ${pathwlBirc}/Shell/Deploy/DeployErr.sh' ${JOB_BASE_NAME}
+                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -deploy -source ${pathwlBirc}/Deploy/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension} -targets ${clusterWlBirc} -usenonexclusivelock"
                                 """
                                 echo "3. start a la aplicación";
                                 sh """
-                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} 'sh ${pathwlBirc}/Shell/StartApp/Start.sh' ${JOB_BASE_NAME}
+                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -start -name ${artifactNameWlBirc}"
                                 """
                             }
                             if( statusCode == 'failure' || statusCode == 'unstable' ){
                                 echo "No es posible realizar el Deploy, se despliega la versión anterior.";
                                 sh """
-                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} 'sh ${pathwlBirc}/Shell/Deploy/DeployErr.sh' ${JOB_BASE_NAME}
+                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -deploy -source ${pathwlBirc}/Deploy/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension} -targets ${clusterWlBirc} -usenonexclusivelock"
                                 """
                                 echo "start aplicación";
                                 sh """
-                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} 'sh ${pathwlBirc}/Shell/StartApp/Start.sh' ${JOB_BASE_NAME}
+                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -start -name ${artifactNameWlBirc}"
                                 """
                             }
                             statusCode='failure';
@@ -336,18 +337,23 @@ pipeline {
                }
            }
        }*/
-    
-    //}
-//}
-    /*post {
+    }
+
+    post {
         always{
             echo "Enviar logs...";
+            //Se envia el logs de la ejecucion del jobs a traves de correo.
+             emailext(attachLog:true, body: "Ejecucion de Jobs de la rama ${BRANCH_NAME}", subject: "Rama ${BRANCH_NAME} con la ejecucion del log adjunto", to: 'epalacios@qvision.us')
+             //Se envia el logs de la ejecucion del jobs hacia un bucket de S3
+             //aws s3 cp /var/jenkins_home/jobs/$PROJECT_NAME/branches/$BRANCH_NAME/builds/log/$DATE_TIME S3://$BUCKET_NAME
             cleanWs();
         }
+        //Manejo de las execepciones con envio de notificacion por medio de slack  segun del status que coresponda.
         success{
             script{
-                if( "${BRANCH_NAME}" == "develop" || "${BRANCH_NAME}" == "qa" || "${BRANCH_NAME}" == "master" ){
+                if( "${BRANCH_NAME}" == "devops" || "${BRANCH_NAME}" == "qa" || "${BRANCH_NAME}" == "master" ){
                     slackSend color: '#90FF33', message: "El despliegue en ${BRANCH_NAME} \n finalizo con estado: success  \n Puedes ver los logs en: ${env.BUILD_URL}console \n app: http://${serverWlSshBirc}:7001/FACTURAELECTRONICA/";
+
                 }
             }
         }
@@ -364,7 +370,6 @@ pipeline {
                     slackSend color: '#FF4233', message: "El despliegue en ${BRANCH_NAME} \n finalizo con estado: failure  \n Puedes ver los logs en: ${env.BUILD_URL}console \n app: http://${serverWlSshBirc}:7001/FACTURAELECTRONICA/";
                 }
             }
-        }          
+        }         
     }
-}*/
-
+}
