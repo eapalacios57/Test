@@ -348,7 +348,9 @@ pipeline {
              //aws s3 cp /var/jenkins_home/jobs/$PROJECT_NAME/branches/$BRANCH_NAME/builds/log/$DATE_TIME S3://$BUCKET_NAME
               withCredentials([string(credentialsId: 'userAWS', variable: 'userAws'), string(credentialsId: 'keyAWS', variable: 'passaws')]) {
                 // some block
-                aws s3 ls s3://dockerprueba
+                script{
+                     aws s3 ls s3://dockerprueba
+                }
              }
             cleanWs();
         }
