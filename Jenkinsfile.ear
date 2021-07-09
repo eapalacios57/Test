@@ -11,7 +11,7 @@ pipeline {
         statusCode = '';
     }  
     withCredentials([string(credentialsId: 'userAWS', variable: 'userAws'), string(credentialsId: 'keyAWS', variable: 'passaws')]) {
-    
+    }
     //Se realiza analisis de codigo estatico y se envian los reportes de las pruebas unitarias y de cobertura.
     stages {
         /*stage('SonarQube analysis') {
@@ -378,5 +378,5 @@ pipeline {
             }
         }   
     }
-    }      
+         
 }
