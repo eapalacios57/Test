@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        label 'docker'
-    }
+    agent any
     options {
         buildDiscarder logRotator(
                     daysToKeepStr: '16',
@@ -13,7 +11,7 @@ pipeline {
     }  
     stages {
         //Se ejecuta las pruebas unitarias y el analisis de cobertura utilizando maven dockerizado
-        stage('Test'){
+        /*stage('Test'){
             when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
             agent {
                 label 'docker'
@@ -47,7 +45,7 @@ pipeline {
                     }
                 }
             }                            
-        }
+        }*/
         //Aprobación por el gestor de la configuracion dependiendo de la rama.
         stage ("Revisión GC"){
             when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
@@ -71,9 +69,7 @@ pipeline {
         }
         //Pendiente por definicion
         stage("Build") {
-            agent {
-                label 'docker' 
-            }
+            agent any
             when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
             steps {
                 echo "build Pendiente Definición"
@@ -81,6 +77,7 @@ pipeline {
             }
         }
         //Setea las variables almacenas en el arhivo .JSON
+        
         stage('Set variables'){
             agent {
                 label 'master' 
@@ -100,18 +97,6 @@ pipeline {
                    idKeyWlSshBirc = JENKINS_FILE[BRANCH_NAME]['idKeyWlSshBirc'];
                    extension = JENKINS_FILE[BRANCH_NAME]['extension'];
                    
-                    withCredentials([
-                        file(
-                            credentialsId: "${idKeyWlSshBirc}",
-                            variable: 'KeyWlSshBirc'), 
-                        usernamePassword(
-                            credentialsId: "${idUserANDPassWlBirc}", 
-                            usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
-                    ]){ 
-                       sh """
-                           sh pipelineFiles/SetVariables/env.sh ${urlWlBirc} ${userwlBirc} ${passwlBirc} ${artifactNameWlBirc} ${domainWlBirc} ${pathwlBirc} ${clusterWlBirc} ${serverWlSshBirc} ${puertoWlSshBirc} ${KeyWlSshBirc} ${extension}
-                       """
-                    }
                 }
             }
        }
@@ -123,22 +108,25 @@ pipeline {
            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
            steps {
                 catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
-                     withCredentials([
+                     /*withCredentials([
                         file(
                             credentialsId: "${idKeyWlSshBirc}",
                             variable: 'KeyWlSshBirc'), 
                         usernamePassword(
                             credentialsId: "${idUserANDPassWlBirc}",
                             usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
-                     ]){
+                     ]){*/
+                    sshagent(credentials:['ssh_server_weblogic']){
+                    withCredentials([usernamePassword(credentialsId: '${idUserANDPassWlBirc}', passwordVariable: 'passwlBirc', usernameVariable: 'userwlBirc')]) {
                          sh """
                             #Subir todos los manejados o Nodos
-                            ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} nohup ./startNodeManager.sh > nodemanager.log 2>&1 &"
+                            ssh -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} nohup ./startNodeManager.sh > nodemanager.log 2>&1 &"
                           
                             #Habilitar programa con el script setDomainEnv.sh y detener el artefacto con el nombre de este.
-                            ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -stop -name ${artifactNameWlBirc}"
+                            ssh -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -stop -name ${artifactNameWlBirc}"
                             """
                             
+                    }
                     }
                 }
             }
@@ -165,6 +153,7 @@ pipeline {
             }
         }
         // Anular despligue
+        /*
         stage('Undeploy'){
             agent {
                 label 'master' 
@@ -369,6 +358,7 @@ pipeline {
                     slackSend color: '#FF4233', message: "El despliegue en ${BRANCH_NAME} \n finalizo con estado: failure  \n Puedes ver los logs en: ${env.BUILD_URL}console \n app: http://${serverWlSshBirc}:7001/FACTURAELECTRONICA/";
                 }
             }
-        }      
+        }    */  
+    
     }
 }

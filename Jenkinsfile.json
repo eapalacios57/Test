@@ -1,7 +1,7 @@
 {
         "develop": {
             "urlWlBirc": "t3://172.17.0.2:9005", 
-            "idUserANDPassWlBirc": "6aac505c-c2b2-4b33-b867-7b40f4744a24", 
+            "idUserANDPassWlBirc": "UserandpasswordConsole", 
             "artifactNameWlBirc": "FACTURAELECTRONICA",
             "domainWlBirc": "/u01/oracle/user_projects/domains/base_domain/bin",
             "pathwlBirc": "/u01/oracle/user_projects/domains/base_domain/deploysJenkins/App/birc",
