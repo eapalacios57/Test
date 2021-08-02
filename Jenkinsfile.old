@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        label 'docker'
-    }
+    agent any
     options {
         buildDiscarder logRotator(
                     daysToKeepStr: '16',
@@ -9,48 +7,46 @@ pipeline {
             )
     }
     environment {
+        ENV_FILE="$JOB_BASE_NAME";
         statusCode = '';
     }  
+    withCredentials([string(credentialsId: 'userAWS', variable: 'userAws'), string(credentialsId: 'keyAWS', variable: 'passaws')]) {
+    }
+    //Se realiza analisis de codigo estatico y se envian los reportes de las pruebas unitarias y de cobertura.
     stages {
-        //Se ejecuta las pruebas unitarias y el analisis de cobertura utilizando maven dockerizado
-        stage('Test'){
-            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
-            agent {
-                label 'docker'
-            } 
-            steps {
-                sh 'docker run --rm -v /root/.m2:/root/.m2 -v $PWD/Back:/app -w /app maven:3-alpine mvn test'
-                stash includes: 'Back/target/', name: 'mysrc'
-            }
-        }
-        //Se realiza analisis de codigo estatico y se envian los reportes dbe las pruebas unitarias y de cobertura.
-        stage('SonarQube analysis') {
-            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
-            agent {
-                  label 'nodejenkinsjdk11' 
-                }      
+        /*stage('SonarQube analysis') {
+           agent {
+                label 'nodejenkinsjdk11' 
+           }
+           steps {
+               script {
+                   last_stage = env.STAGE_NAME
+                   def SCANNERHOME = tool name: 'sonar-scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                   withSonarQubeEnv('SonarCloud'){
+                         sh """
+                           ${SCANNERHOME}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.projectVersion=0.${BUILD_NUMBER}
+                         """
+                   }
+               }*
+               echo "SonarQube analysis";              
+           }
+        }*/
+        stage("Quality gate") {
+            /*steps {
+                script {
+                    last_stage = env.STAGE_NAME
+                }
+                waitForQualityGate abortPipeline: true
+             }*/
             steps {
                 script {
-                   last_stage = env.STAGE_NAME
-                    
-                    def SCANNERHOME = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'                  
-                   
-                    unstash 'mysrc'
-                    
-                    if( BRANCH_NAME != 'master'){
-                        branchSonar=BRANCH_NAME
-                    }
-                    
-                    withSonarQubeEnv('SonarCloud') {
-                        echo 'sonar'
-                        sh "${SCANNERHOME}/bin/sonar-scanner -Dsonar.branch.name='${branchSonar}'"
-                    }
+                    echo "Quality gate";
                 }
-            }                            
+             }
         }
-        //Aprobación por el gestor de la configuracion dependiendo de la rama.
+        //Revisin y aprobación por el gestor de la configuracion dependiendo de la rama.
         stage ("Revisión GC"){
-            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
+            when { anyOf { branch 'devops'; branch 'stage'; branch 'master' } }
             steps{
                 script{
                     try {
@@ -61,7 +57,7 @@ pipeline {
                             input(
                                 message: 
                                 "######################################################");
-                        }
+                    }
                     }
                     catch(err){
                         echo $err;
@@ -71,13 +67,9 @@ pipeline {
         }
         //Pendiente por definicion
         stage("Build") {
-            agent {
-                label 'docker' 
-            }
-            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
+            when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } }
             steps {
                 echo "build Pendiente Definición"
-              
             }
         }
         //Setea las variables almacenas en el arhivo .JSON
@@ -85,7 +77,7 @@ pipeline {
             agent {
                 label 'master' 
             }
-            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
+            when { anyOf { branch 'devops'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
             steps{
                 script{
                    JENKINS_FILE = readJSON file: 'Jenkinsfile.json';
@@ -99,28 +91,15 @@ pipeline {
                    puertoWlSshBirc = JENKINS_FILE[BRANCH_NAME]['puertoWlSshBirc'];
                    idKeyWlSshBirc = JENKINS_FILE[BRANCH_NAME]['idKeyWlSshBirc'];
                    extension = JENKINS_FILE[BRANCH_NAME]['extension'];
-                   
-                    withCredentials([
-                        file(
-                            credentialsId: "${idKeyWlSshBirc}",
-                            variable: 'KeyWlSshBirc'), 
-                        usernamePassword(
-                            credentialsId: "${idUserANDPassWlBirc}", 
-                            usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
-                    ]){ 
-                       sh """
-                           sh pipelineFiles/SetVariables/env.sh ${urlWlBirc} ${userwlBirc} ${passwlBirc} ${artifactNameWlBirc} ${domainWlBirc} ${pathwlBirc} ${clusterWlBirc} ${serverWlSshBirc} ${puertoWlSshBirc} ${KeyWlSshBirc} ${extension}
-                       """
-                    }
                 }
             }
        }
-       //Detener la aplicación
+       //Detiene la aplicación
        stage('Stop App'){
            agent {
                 label 'master' 
            }                
-           when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
+           when { anyOf { branch 'devops'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
            steps {
                 catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
                      withCredentials([
@@ -132,18 +111,17 @@ pipeline {
                             usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
                      ]){
                          sh """
-                            #Subir todos los manejados o Nodos
+                            #Subir todos los manejados o Nodos si estan caidos
                             ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} nohup ./startNodeManager.sh > nodemanager.log 2>&1 &"
-                          
                             #Habilitar programa con el script setDomainEnv.sh y detener el artefacto con el nombre de este.
                             ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -stop -name ${artifactNameWlBirc}"
                             """
                             
-                    }
+                     }
                 }
-            }
-            //Mantener el estado del stage anterior
-            post {
+           }
+           //Mantener el estado del stage anterior
+           post {
                 success {
                     println "Stage Stop App <<<<<< success >>>>>>"
                     script{
@@ -162,16 +140,16 @@ pipeline {
                         statusCode='failure';
                     }
                 }
-            }
-        }
-        // Anular despligue
-        stage('Undeploy'){
-            agent {
+           }
+       }
+       // Anular despligue
+       stage('Undeploy'){
+           agent {
                 label 'master' 
-            }
-            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
-            steps{
-                //Manejo del status code de este stage
+           }
+           when { anyOf { branch 'devops'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
+           steps{
+               //Manejo del status code de este stage
                 catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
                     withCredentials([
                         file(
@@ -182,28 +160,28 @@ pipeline {
                             usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
                     ]){
                         script{                           
-                            echo "Estatus Code Stage Anterior(Stop App): ${statusCode}";
-                            if( statusCode == 'success' ){
+                             echo "Estatus Code Stage Anterior(Stop App): ${statusCode}";
+                             if( statusCode == 'success' ){
                                 sh """
                                     #Detener la aplicacion con el nombre del artefacto
                                     ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl $urlWlBirc -username ${userwlBirc} -password $passwlBirc -undeploy -name ${artifactNameWlBirc} -targets ${clusterWlBirc} -usenonexclusivelock -graceful -ignoresessions"
                                 """
-                            }
-                            if( statusCode == 'failure' || statusCode == 'unstable' ){
-                                autoCancelled = true
-                                error('Aborting the build.')
-                            }
+                             }
+                             if( statusCode == 'failure' || statusCode == 'unstable' ){
+                                  autoCancelled = true
+                                  error('Aborting the build.')
+                             }
                         }
                     }
                 }               
-            }
-            post {
-                success {
-                    println "Stage Undeploy <<<<<< success >>>>>>"
-                    script{
+           }
+           post {
+               success {
+                   println "Stage Undeploy <<<<<< success >>>>>>"
+                   script{
                         statusCode='success';
-                    } 
-                    withCredentials([
+                   } 
+                   withCredentials([
                         file(
                             credentialsId: "${idKeyWlSshBirc}",
                             variable: 'KeyWlSshBirc')
@@ -213,14 +191,14 @@ pipeline {
                             #Copiar el artefacto hacia el servidor weblogic.
                             scp -i ${KeyWlSshBirc} -P ${puertoWlSshBirc} Despliegue/${artifactNameWlBirc}.${extension} oracle@${serverWlSshBirc}:${pathwlBirc}/DeploysTemp/${BRANCH_NAME}
                         """
-                    }                   
-                }
-                unstable {
-                    script{
-                            statusCode='unstable';
-                    } 
-                    println "Stage Undeploy <<<<<< unstable >>>>>>"
-                }
+                  }                   
+               }
+               unstable {
+                   script{
+                        statusCode='unstable';
+                   } 
+                   println "Stage Undeploy <<<<<< unstable >>>>>>"
+               }
                failure {
                     println "Stage Undeploy <<<<<< failure >>>>>>"
                     withCredentials([file(credentialsId: "${idKeyWlSshBirc}",variable: 'KeyWlSshBirc')]){    
@@ -239,36 +217,36 @@ pipeline {
            }
         }
         stage('Deploy'){      
-            agent {
+           agent {
                 label 'master' 
-            }          
-            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
-            steps{
-                //Manejo del status code de este stage
-                catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
+           }          
+           when { anyOf { branch 'devops'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
+           steps{
+               //Manejo del status code de este stage
+               catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
                     withCredentials([
-                        file(
-                            credentialsId: "${idKeyWlSshBirc}",
-                            variable: 'KeyWlSshBirc'), 
-                        usernamePassword(
-                            credentialsId: "${idUserANDPassWlBirc}",
-                            usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
-                    ]){
-                        script{
-                            echo "Estatus Code Stage Anterior (Undeploy): ${statusCode}";
-                            if( statusCode == 'success' ){
-                                sh"""
-                                    #Inicia la aplicacion con el nuevo artefacto
-                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -deploy -source ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension} -targets ${clusterWlBirc} -usenonexclusivelock"
-                                """
-                            }
-                            if( statusCode == 'failure' || statusCode == 'unstable' ){
-                                    autoCancelled = true
-                                    error('Aborting the build.')
-                            }
-                        }
+                         file(
+                              credentialsId: "${idKeyWlSshBirc}",
+                              variable: 'KeyWlSshBirc'), 
+                         usernamePassword(
+                              credentialsId: "${idUserANDPassWlBirc}",
+                              usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
+                        ]){
+                           script{
+                                echo "Estatus Code Stage Anterior (Undeploy): ${statusCode}";
+                                if( statusCode == 'success' ){
+                                    sh"""
+                                        #Inicia la aplicacion con el nuevo artefacto
+                                        ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -deploy -source ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension} -targets ${clusterWlBirc} -usenonexclusivelock"
+                                    """
+                                }
+                                if( statusCode == 'failure' || statusCode == 'unstable' ){
+                                     autoCancelled = true
+                                     error('Aborting the build.')
+                                }
+                           }
+                         }
                     }
-                }
             }
             post {
                 success {
@@ -284,7 +262,7 @@ pipeline {
                                 ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension}  ${pathwlBirc}/Deploy/${JOB_BASE_NAME}"
                                
                             """
-                    }
+                        }
                 }
                 unstable {
                     println "Stage Deploy <<<<<< unstable >>>>>>"
@@ -325,32 +303,61 @@ pipeline {
                     }
                 }
             }
-        } 
+       } 
+       /*stage('Start App'){
+           agent {
+                label 'master' 
+           }     
+           when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
+           steps{
+                catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
+                    withCredentials([file(credentialsId: "${idKeyWlSshBirc}",variable: 'KeyWlSshBirc')]){
+                        script{
+                            echo "Estatus Code Stage Anterior(Deploy): ${statusCode}";
+                            if( statusCode == 'success' ){
+                                sh"""
+                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} 'sh ${pathwlBirc}/Shell/StartApp/Start.sh' ${JOB_BASE_NAME}
+                                """ 
+                            }
+                            if( statusCode == 'failure' || statusCode == 'unstable' ){
+                                autoCancelled = true
+                                error('Aborting the build.')
+                            }
+                        }               
+                    }
+                }
+           }
+           post {
+               success {
+                   println "Stage Start App <<<<<< success >>>>>>"
+               }
+               unstable {
+                   println "Stage Start App <<<<<< unstable >>>>>>"
+               }
+               failure {
+                   println "Stage Start App <<<<<< failure >>>>>>"
+               }
+           }
+       }*/
     }
-    post {         
+
+    post {
         always{
             echo "Enviar logs...";
             //Se envia el logs de la ejecucion del jobs a traves de correo.
-            emailext(attachLog:true, body: "Ejecucion de Jobs de la rama ${BRANCH_NAME}", subject: "Rama ${BRANCH_NAME} con la ejecucion del log adjunto", to: 'epalacios@qvision.us')
-            
-            // withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'ACCES_AWS_S3', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-            //     sh """
-            //         aws --version
-            //         cat /var/jenkins_home/jobs/birc-core-backen/branches/$BRANCH_NAME/builds/${BUILD_NUMBER}/log
-            //         aws s3 ls s3://bucket-test-sbolivar
-            //         """
-            // }
-            //Se envia el logs de la ejecucion del jobs hacia un bucket de S3
-            // withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'ACCES_AWS_S3', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-            // some block
-            //}
-                //aws s3 cp /var/jenkins_home/jobs/$PROJECT_NAME/branches/$BRANCH_NAME/builds/log/$DATE_TIME S3://$BUCKET_NAME
+             emailext(attachLog:true, body: "Ejecucion de Jobs de la rama ${BRANCH_NAME}", subject: "Rama ${BRANCH_NAME} con la ejecucion del log adjunto", to: 'epalacios@qvision.us')
+             //Se envia el logs de la ejecucion del jobs hacia un bucket de S3
+             //aws s3 cp /var/jenkins_home/jobs/$PROJECT_NAME/branches/$BRANCH_NAME/builds/log/$DATE_TIME S3://$BUCKET_NAME
+              
+                // some block
+                     aws s3 ls s3://dockerprueba               
+             
             cleanWs();
         }
         //Manejo de las execepciones con envio de notificacion por medio de slack  segun del status que coresponda.
         success{
             script{
-                if( "${BRANCH_NAME}" == "develop" || "${BRANCH_NAME}" == "qa" || "${BRANCH_NAME}" == "master" ){
+                if( "${BRANCH_NAME}" == "devops" || "${BRANCH_NAME}" == "qa" || "${BRANCH_NAME}" == "master" ){
                     slackSend color: '#90FF33', message: "El despliegue en ${BRANCH_NAME} \n finalizo con estado: success  \n Puedes ver los logs en: ${env.BUILD_URL}console \n app: http://${serverWlSshBirc}:7001/FACTURAELECTRONICA/";
 
                 }
@@ -369,6 +376,7 @@ pipeline {
                     slackSend color: '#FF4233', message: "El despliegue en ${BRANCH_NAME} \n finalizo con estado: failure  \n Puedes ver los logs en: ${env.BUILD_URL}console \n app: http://${serverWlSshBirc}:7001/FACTURAELECTRONICA/";
                 }
             }
-        }      
+        }   
     }
+         
 }
