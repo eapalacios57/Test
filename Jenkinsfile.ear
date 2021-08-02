@@ -106,11 +106,10 @@ pipeline {
             }
        }
        //Detener la aplicación
-       stage('Stop App'){
-           agent any               
+       stage('Stop App'){          
            withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
-                        remote.user= userName
-                        remote.password= password
+                        remote.user = userName
+                        remote.password = password
 
                         sshCommand remote: remote, command: 'ls -la'
 
