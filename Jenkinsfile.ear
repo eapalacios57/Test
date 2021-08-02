@@ -106,7 +106,7 @@ pipeline {
            agent any
            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
            steps{
-               sh "cat Hello Word"
+               sh "echo Hello Word"
            }
                    /*withCredentials([
                         file(
