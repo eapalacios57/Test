@@ -110,6 +110,9 @@ pipeline {
            agent any               
            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
            steps {
+               withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
+                        remote.user= userName
+                        remote.password= password
                 catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
                      /*withCredentials([
                         file(
@@ -119,9 +122,6 @@ pipeline {
                             credentialsId: "${idUserANDPassWlBirc}",
                             usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
                      ]){*/
-                    withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
-                        remote.user= userName
-                        remote.password= password
                         /*
                          sh """
                             #Subir todos los manejados o Nodos
