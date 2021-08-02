@@ -99,6 +99,7 @@ pipeline {
               
             }
        }
+     }
       
        //Detener la aplicación
        stage('Stop App'){          
@@ -356,5 +357,5 @@ pipeline {
         }    */  
     
     }
-}
+
 
