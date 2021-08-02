@@ -99,6 +99,7 @@ pipeline {
 
                    def remote = [:]
                    remote.name = 'Pruebas'
+                   remote.user = 'Pruebas'
                    remote.host = "190.85.106.202"
                    remote.allowAnyHosts = true
 
