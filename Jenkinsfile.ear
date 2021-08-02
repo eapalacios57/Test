@@ -98,8 +98,8 @@ pipeline {
                    extension = JENKINS_FILE[BRANCH_NAME]['extension'];
 
                    def remote = [:]
-                   remote.name = 'Pruebas'
-                   remote.user = 'Pruebas'
+                   remote.name = 'birc'
+                   remote.user = 'birc'
                    remote.host = "190.85.106.202"
                    remote.allowAnyHosts = true
 
