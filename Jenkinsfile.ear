@@ -136,6 +136,7 @@ pipeline {
                 }
             }
             //Mantener el estado del stage anterior
+            /*
             post {
                 success {
                     println "Stage Stop App <<<<<< success >>>>>>"
@@ -366,3 +367,4 @@ pipeline {
         }    */  
     
     }
+    
