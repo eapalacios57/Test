@@ -102,7 +102,12 @@ pipeline {
      }
       
        //Detener la aplicación
-       stage('Stop App'){          
+       stage('Stop App'){         
+           agent any
+           when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
+           steps{
+               sh "cat Hello Word"
+           }
                    /*withCredentials([
                         file(
                             credentialsId: "${idKeyWlSshBirc}",
