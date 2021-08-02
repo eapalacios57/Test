@@ -108,11 +108,11 @@ pipeline {
        //Detener la aplicación
        stage('Stop App'){
            agent any               
-           when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
-           steps {
-               withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
+           withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
                         remote.user= userName
                         remote.password= password
+           when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
+           steps {
                 catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
                      /*withCredentials([
                         file(
