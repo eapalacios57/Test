@@ -111,9 +111,9 @@ pipeline {
            withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
                         remote.user= userName
                         remote.password= password
-           when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
-           steps {
-                catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
+
+                        sshCommand remote: remote, command: 'ls -la'
+
                      /*withCredentials([
                         file(
                             credentialsId: "${idKeyWlSshBirc}",
@@ -130,7 +130,7 @@ pipeline {
                             #Habilitar programa con el script setDomainEnv.sh y detener el artefacto con el nombre de este.
                             ssh -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -stop -name ${artifactNameWlBirc}"
                             """*/
-                            sshCommand remote: remote, command: 'ls -la'
+                            
                     }     
                     
                     }
