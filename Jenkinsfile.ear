@@ -104,17 +104,13 @@ pipeline {
                    
                    
                      sshCommand remote: remote, command: 'ls -la'
-
-                
+              
             }
        }
       
        //Detener la aplicación
        stage('Stop App'){          
-
-                        sshCommand remote: remote, command: 'ls -la'
-
-                     /*withCredentials([
+                   /*withCredentials([
                         file(
                             credentialsId: "${idKeyWlSshBirc}",
                             variable: 'KeyWlSshBirc'), 
