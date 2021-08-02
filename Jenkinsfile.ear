@@ -102,9 +102,7 @@ pipeline {
        }
        //Detener la aplicación
        stage('Stop App'){
-           agent {
-                label 'master' 
-           }                
+           agent any               
            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
            steps {
                 catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
@@ -117,7 +115,7 @@ pipeline {
                             usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
                      ]){*/
                     sshagent(credentials:['ssh_server_weblogic']){
-                    withCredentials([usernamePassword(credentialsId: '${idUserANDPassWlBirc}', passwordVariable: 'passwlBirc', usernameVariable: 'userwlBirc')]) {
+                    withCredentials([usernamePassword(credentialsId: "${idUserANDPassWlBirc}", passwordVariable: 'passwlBirc', usernameVariable: 'userwlBirc')]) {
                          sh """
                             #Subir todos los manejados o Nodos
                             ssh -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} nohup ./startNodeManager.sh > nodemanager.log 2>&1 &"
