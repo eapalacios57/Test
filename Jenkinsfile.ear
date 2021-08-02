@@ -1,8 +1,3 @@
-def remote = [:]
-remote.name = "birc"
-remote.host = "190.85.106.202"
-remote.allowAnyHosts = true
-
 pipeline {
     agent any
     options {
@@ -14,9 +9,6 @@ pipeline {
     environment {
         statusCode = '';
     }  
-     withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
-                remote.user = userName
-                remote.password = password
     stages {
         //Se ejecuta las pruebas unitarias y el analisis de cobertura utilizando maven dockerizado
         /*stage('Test'){
@@ -104,7 +96,15 @@ pipeline {
                    puertoWlSshBirc = JENKINS_FILE[BRANCH_NAME]['puertoWlSshBirc'];
                    idKeyWlSshBirc = JENKINS_FILE[BRANCH_NAME]['idKeyWlSshBirc'];
                    extension = JENKINS_FILE[BRANCH_NAME]['extension'];
+
+                   def remote = [:]
+                   remote.name = "birc"
+                   remote.host = "190.85.106.202"
+                   remote.allowAnyHosts = true
                    
+                   withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
+                     sshCommand remote: remote, command: 'ls -la'
+
                 }
             }
        }
