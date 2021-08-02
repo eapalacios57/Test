@@ -114,7 +114,7 @@ pipeline {
                             credentialsId: "${idUserANDPassWlBirc}",
                             usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
                      ]){*/
-                    sshagent(credentials:['ssh_server_weblogic']){
+                    sshagent{
                     withCredentials([usernamePassword(credentialsId: "${idUserANDPassWlBirc}", passwordVariable: 'passwlBirc', usernameVariable: 'userwlBirc')]) {
                          sh """
                             #Subir todos los manejados o Nodos
