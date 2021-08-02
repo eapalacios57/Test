@@ -14,6 +14,9 @@ pipeline {
     environment {
         statusCode = '';
     }  
+     withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
+                remote.user = userName
+                remote.password = password
     stages {
         //Se ejecuta las pruebas unitarias y el analisis de cobertura utilizando maven dockerizado
         /*stage('Test'){
@@ -105,9 +108,7 @@ pipeline {
                 }
             }
        }
-       withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
-                remote.user = userName
-                remote.password = password
+      
        //Detener la aplicación
        stage('Stop App'){          
 
