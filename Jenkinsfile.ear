@@ -101,11 +101,10 @@ pipeline {
                    remote.name = 'birc'
                    remote.host = "190.85.106.202"
                    remote.port = 2224
-
                    remote.allowAnyHosts = true
 
                    withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
-                    remote.user = username
+                    remote.user = userName
                     remote.password = password
                     sshCommand remote: remote, command: 'ls -la'
                     }
