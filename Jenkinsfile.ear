@@ -108,6 +108,7 @@ pipeline {
                     remote.password = password
                     sshCommand remote: remote, command: 'ls -la'
                     sshCommand remote: remote, command: 'cd ${domainWlBirc}'
+                    sshCommand remote: remote, command: 'ls -la'
                     }
               
             }
