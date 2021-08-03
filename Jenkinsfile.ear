@@ -101,7 +101,7 @@ pipeline {
                    remote.name = 'birc'
                    remote.user = 'birc'
                    remote.host = "190.85.106.202"
-                   remote.port = 2228
+                   remote.port = 2224
 
                    remote.allowAnyHosts = true
 
