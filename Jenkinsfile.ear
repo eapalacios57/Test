@@ -106,7 +106,7 @@ pipeline {
                    remote.allowAnyHosts = true
 
                     withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
-                   sshCommand remote: remote, command: 'sudo ls -la'
+                   sshCommand remote: remote, command: 'ls -la'
                     }
               
             }
