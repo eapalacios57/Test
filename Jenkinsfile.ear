@@ -107,7 +107,7 @@ pipeline {
                     remote.user = userName
                     remote.password = password
                     sshCommand remote: remote, command: 'ls -la'
-                    sshCommand remote: remote, command: 'cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -stop -name ${artifactNameWlBirc}'
+                    sshCommand remote: remote, command: 'cd ${domainWlBirc}'
                     }
               
             }
