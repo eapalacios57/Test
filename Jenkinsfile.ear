@@ -16,6 +16,7 @@ pipeline {
             remote.user = userName
             remote.password = password
         statusCode = '';
+        }
     }  
     stages {
         //Se ejecuta las pruebas unitarias y el analisis de cobertura utilizando maven dockerizado
