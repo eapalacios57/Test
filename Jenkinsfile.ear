@@ -143,9 +143,9 @@ pipeline {
                             ssh -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -stop -name ${artifactNameWlBirc}"
                             """*/
                         withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
-                         remote.user = userName
-                         remote.password = password
-                        sshCommand remote: remote, command: 'cd /u01/oracle/user_projects/domains/base_domain/bin && . ./setDomainEnv.sh ENV && java weblogic.Deployer -debug -remote -verbose -adminurl t3://172.17.0.3:9005 -username weblogic -password Bolivar2021* -stop -name FACTURAELECTRONICA'
+                        remote.user = userName
+                        remote.password = password
+                            sshCommand remote: remote, command: 'cd /u01/oracle/user_projects/domains/base_domain/bin && . ./setDomainEnv.sh ENV && java weblogic.Deployer -debug -remote -verbose -adminurl t3://172.17.0.3:9005 -username weblogic -password Bolivar2021* -stop -name FACTURAELECTRONICA'
                             
                      
                         }
