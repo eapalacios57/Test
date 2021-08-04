@@ -115,8 +115,8 @@ pipeline {
                     echo "${WEBLOGIC_CREDENTIAL_USR}"
                     sshCommand remote: remote, command: 'cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -stop -name ${artifactNameWlBirc}'
                     sshCommand remote: remote, command: 'ls -la'
-                    
-                    }
+                   }
+                }
               
             }
        }
