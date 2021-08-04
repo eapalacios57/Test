@@ -125,7 +125,7 @@ pipeline {
            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
            steps{
                sh "echo Hello Word"
-           }
+           
                    /*withCredentials([
                         file(
                             credentialsId: "${idKeyWlSshBirc}",
@@ -149,6 +149,7 @@ pipeline {
                             
                      
                         }
+           }
                     
                 }
             }
