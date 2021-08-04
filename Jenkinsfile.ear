@@ -1,3 +1,8 @@
+  def remote = [:]
+  remote.name = 'birc'
+  remote.host = "190.85.106.202"
+  remote.port = 2224
+  remote.allowAnyHosts = true
 pipeline {
     agent any
     options {
@@ -7,6 +12,9 @@ pipeline {
             )
     }
     environment {
+        withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
+            remote.user = userName
+            remote.password = password
         statusCode = '';
     }  
     stages {
@@ -97,7 +105,8 @@ pipeline {
                    puertoWlSshBirc = JENKINS_FILE[BRANCH_NAME]['puertoWlSshBirc'];
                    idKeyWlSshBirc = JENKINS_FILE[BRANCH_NAME]['idKeyWlSshBirc'];
                    extension = JENKINS_FILE[BRANCH_NAME]['extension'];
-
+                   
+                   /*
                    def remote = [:]
                    remote.name = 'birc'
                    remote.host = "190.85.106.202"
