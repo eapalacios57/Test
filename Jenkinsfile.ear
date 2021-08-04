@@ -1,8 +1,3 @@
-  def remote = [:]
-  remote.name = 'birc'
-  remote.host = "190.85.106.202"
-  remote.port = 2224
-  remote.allowAnyHosts = true
 pipeline {
     agent any
     options {
@@ -12,7 +7,7 @@ pipeline {
             )
     }
     environment {
-        statusCode = '';
+        WEBLOGIC_CREDENTIAL = credentials('ssh_server_weblogic') 
         
     }  
     stages {
@@ -104,22 +99,23 @@ pipeline {
                    idKeyWlSshBirc = JENKINS_FILE[BRANCH_NAME]['idKeyWlSshBirc'];
                    extension = JENKINS_FILE[BRANCH_NAME]['extension'];
                    
-                   /*
+                   
                    def remote = [:]
                    remote.name = 'birc'
                    remote.host = "190.85.106.202"
                    remote.port = 2224
                    remote.allowAnyHosts = true
 
-                   withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
-                    remote.user = userName
-                    remote.password = password
-                    /*
+                  // withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
+                  // remote.user = userName
+                  // remote.password = password
+                    
                     sshCommand remote: remote, command: 'ls -la'
                     //sshCommand remote: remote, command: 'cd /u01/oracle/user_projects/domains/base_domain/bin && . ./setDomainEnv.sh ENV && java weblogic.Deployer -debug -remote -verbose -adminurl t3://172.17.0.3:9005 -username weblogic -password Bolivar2021* -stop -name FACTURAELECTRONICA'
-                    sshCommand remote: remote, command: 'cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -stop -name ${artifactNameWlBirc}'
+                    echo "${WEBLOGIC_CREDENTIAL_USR}"
+                    sshCommand remote: remote, command: 'cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -stop -name ${artifactNameWlBirc}'
                     sshCommand remote: remote, command: 'ls -la'
-                    */
+                    
                     }
               
             }
@@ -131,6 +127,7 @@ pipeline {
            agent any
            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
            steps{
+               echo "Prueba"
                     /*withCredentials([
                         file(
                             credentialsId: "${idKeyWlSshBirc}",
@@ -147,16 +144,7 @@ pipeline {
                             #Habilitar programa con el script setDomainEnv.sh y detener el artefacto con el nombre de este.
                             ssh -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -stop -name ${artifactNameWlBirc}"
                             """*/
-                        scrip{
 
-                        withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
-                        remote.user = userName
-                        remote.password = password
-                        }
-                        sshCommand remote: remote, command: 'cd /u01/oracle/user_projects/domains/base_domain/bin && . ./setDomainEnv.sh ENV && java weblogic.Deployer -debug -remote -verbose -adminurl t3://172.17.0.3:9005 -username weblogic -password Bolivar2021* -stop -name FACTURAELECTRONICA'
-                            
-                     
-                        }
            }
                     
                 }
