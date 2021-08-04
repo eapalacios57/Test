@@ -85,6 +85,7 @@ pipeline {
             when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
             steps{
                 script{
+                    
                    JENKINS_FILE = readJSON file: 'Jenkinsfile.json';
                    urlWlBirc  = JENKINS_FILE[BRANCH_NAME]['urlWlBirc'];
                    idUserANDPassWlBirc = JENKINS_FILE[BRANCH_NAME]['idUserANDPassWlBirc'];
@@ -106,10 +107,12 @@ pipeline {
                    withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
                     remote.user = userName
                     remote.password = password
+                    /*
                     sshCommand remote: remote, command: 'ls -la'
                     //sshCommand remote: remote, command: 'cd /u01/oracle/user_projects/domains/base_domain/bin && . ./setDomainEnv.sh ENV && java weblogic.Deployer -debug -remote -verbose -adminurl t3://172.17.0.3:9005 -username weblogic -password Bolivar2021* -stop -name FACTURAELECTRONICA'
                     sshCommand remote: remote, command: 'cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -stop -name ${artifactNameWlBirc}'
                     sshCommand remote: remote, command: 'ls -la'
+                    */
                     }
               
             }
@@ -139,6 +142,7 @@ pipeline {
                             #Habilitar programa con el script setDomainEnv.sh y detener el artefacto con el nombre de este.
                             ssh -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -stop -name ${artifactNameWlBirc}"
                             """*/
+                        sshCommand remote: remote, command: 'cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -stop -name ${artifactNameWlBirc}'
                             
                      
                     
