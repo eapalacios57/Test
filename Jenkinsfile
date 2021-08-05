@@ -14,8 +14,8 @@ pipeline {
     environment {
         WEBLOGIC_CREDENTIAL = credentials('UserandpasswordConsole')
         
-    }/* 
-    stages {
+    }
+    stages {/*
         stage('Test'){
           when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } }
            agent {
@@ -295,7 +295,7 @@ pipeline {
 
         } 
     }     
-    
+}    
 
 
 
