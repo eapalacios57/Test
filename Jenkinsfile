@@ -16,6 +16,62 @@ pipeline {
         
     }  
     stages {
+        stage('Test'){
+          when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } }
+           agent {
+                label 'docker'
+           } 
+           steps {
+               sh './pipelineFiles/test/test.sh mvn test'
+               stash includes: 'Back/target/', name: 'mysrc'
+           }
+        }
+        stage('SonarQube analysis') {
+           when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
+           agent {
+                  label 'nodejenkinsjdk11' 
+                }      
+           steps {
+               script {
+                   last_stage = env.STAGE_NAME
+
+                    unstash 'mysrc'
+                    /*sh """
+                     ${SCANNERHOME}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.projectVersion=0.${BUILD_NUMBER}
+                    """*/
+
+                    
+                    def SCANNERHOME = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'                  
+                   
+                    unstash 'mysrc'
+                    
+                    if( BRANCH_NAME != 'master'){
+                        branchSonar=BRANCH_NAME
+                    }
+                    
+                    withSonarQubeEnv('SonarCloud') {
+                        echo 'sonar'
+                        sh "${SCANNERHOME}/bin/sonar-scanner -Dsonar.branch.name='${branchSonar}'"
+                    }
+                }
+            }                            
+        }
+        stage("Quality gate") {
+         
+            /*steps {
+                script {
+                    last_stage = env.STAGE_NAME
+                }
+                waitForQualityGate abortPipeline: true
+             }*/
+            steps {
+                script {
+                    echo "Quality gate";
+                }
+             }
+        }
+        
+
         stage("Build") {
             agent any
             when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
