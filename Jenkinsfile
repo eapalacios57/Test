@@ -198,7 +198,6 @@ pipeline {
                            }
                          }
                     }
-            }
             post {
                 success {
                     println "Stage Deploy <<<<<< success >>>>>>"
@@ -216,11 +215,11 @@ pipeline {
                                 ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension}  ${pathwlBirc}/Deploy/${JOB_BASE_NAME}"
                                
                             """*/
-                        }
+                    }
                 }
             }
                               
         }  
-  
+}
 
 
