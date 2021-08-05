@@ -3,8 +3,6 @@ remote.name = 'birc'
 remote.host = "190.85.106.202"
 remote.port = 2224
 remote.allowAnyHosts = true
-remote.user = userName
-remote.password = password
 pipeline {
     agent any
     options {
@@ -14,7 +12,9 @@ pipeline {
             )
     }
     environment {
-        WEBLOGIC_CREDENTIAL = credentials('UserandpasswordConsole') 
+        WEBLOGIC_CREDENTIAL = credentials('UserandpasswordConsole')
+        remote.user = userName
+        remote.password = password
         
     }  
     stages {
