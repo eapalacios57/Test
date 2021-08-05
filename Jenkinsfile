@@ -115,7 +115,30 @@ pipeline {
                        }
                         }
                     }
-                }           
+                }
+            post {
+               success {
+                   println "Stage Undeploy <<<<<< success >>>>>>"
+                   script{
+                        statusCode='success';
+                    sshPut remote: remote, from: "Despliegue/${artifactNameWlBirc}.${extension}", into: "${pathwlBirc}/DeploysTemp/${BRANCH_NAME}"
+                   
+                   echo "Copy ear to Server Web Logic";
+
+                   /*
+                   withCredentials([
+                        file(
+                            credentialsId: "${idKeyWlSshBirc}",
+                            variable: 'KeyWlSshBirc')
+                        ]){
+                        echo "Copy ear to Server Web Logic";
+                        sh """
+                            #Copiar el artefacto hacia el servidor weblogic.
+                            scp -i ${KeyWlSshBirc} -P ${puertoWlSshBirc} Despliegue/${artifactNameWlBirc}.${extension} oracle@${serverWlSshBirc}:${pathwlBirc}/DeploysTemp/${BRANCH_NAME}
+                        """*/
+                   }
+                  }                   
+               }                    
            }            
         }    
     }
