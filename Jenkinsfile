@@ -14,7 +14,7 @@ pipeline {
     environment {
         WEBLOGIC_CREDENTIAL = credentials('UserandpasswordConsole')
         
-    }  
+    }/* 
     stages {
         stage('Test'){
           when { anyOf { branch 'develop'; branch 'qa'; branch 'stage'; branch 'master' } }
@@ -39,7 +39,7 @@ pipeline {
                     /*sh """
                      ${SCANNERHOME}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.projectVersion=0.${BUILD_NUMBER}
                     """*/
-
+                    /*
                     
                     def SCANNERHOME = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'                  
                    
@@ -63,7 +63,7 @@ pipeline {
                     last_stage = env.STAGE_NAME
                 }
                 waitForQualityGate abortPipeline: true
-             }*/
+             }/*
             steps {
                 script {
                     echo "Quality gate";
@@ -71,7 +71,7 @@ pipeline {
              }
         }
         
-
+        */
         stage("Build") {
             agent any
             when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
