@@ -53,17 +53,19 @@ pipeline {
              agent {
                 label 'master' 
             }
-        withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
-            remote.user = userName
-            remote.password = password 
-
             when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } } 
             steps{
+                script{
+                    withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
+                    remote.user = userName
+                    remote.password = password
+                    } 
                     
                     //sshCommand remote: remote, command: 'cd /u01/oracle/user_projects/domains/base_domain/bin && . ./setDomainEnv.sh ENV && java weblogic.Deployer -debug -remote -verbose -adminurl t3://172.17.0.3:9005 -username weblogic -password Bolivar2021* -stop -name FACTURAELECTRONICA'
                     echo "${WEBLOGIC_CREDENTIAL_USR}"
                     sshCommand remote: remote, command: "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -stop -name $artifactNameWlBirc"
                     sshCommand remote: remote, command: 'ls -la'
+                    }
                    }
 
             }
