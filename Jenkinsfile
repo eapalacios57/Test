@@ -89,6 +89,31 @@ pipeline {
                 }
            }
         }
+
+        stage('Undeploy'){
+           agent {
+                label 'master' 
+           }
+           when { anyOf { branch 'devops'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
+           steps{
+               //Manejo del status code de este stage
+                catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
+                    script{                          
+                       echo "Estatus Code Stage Anterior(Stop App): ${statusCode}";
+                       if( statusCode == 'success' ){
+                          sh """
+                              #Detener la aplicacion con el nombre del artefacto
+                              ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl $urlWlBirc -username ${userwlBirc} -password $passwlBirc -undeploy -name ${artifactNameWlBirc} -targets ${clusterWlBirc} -usenonexclusivelock -graceful -ignoresessions"
+                          """
+                       }
+                       if( statusCode == 'failure' || statusCode == 'unstable' ){
+                            autoCancelled = true
+                            error('Aborting the build.')
+                       }
+                        }
+                    }
+                }               
+           }
     }
 }
 
