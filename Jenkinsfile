@@ -206,7 +206,7 @@ pipeline {
                     } 
                     //withCredentials([file(credentialsId: "${idKeyWlSshBirc}",variable: 'KeyWlSshBirc')]){                    
                             echo "backup ";
-                            sshCommand remote: remote, command:"cd ${pathwlBirc}/Deploy/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension} ${artifactNameWlBirc}_`date`.${extension} && mv * ${pathwlBirc}/DeploysHistory/${JOB_BASE_NAME}"
+                            sshCommand remote: remote, command:"cd ${pathwlBirc}/Deploy/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension} ${artifactNameWlBirc}_`date +\"%Y-%m-%d-%Y_%H:%M\"`.${extension} && mv * ${pathwlBirc}/DeploysHistory/${JOB_BASE_NAME}"
                             sshCommand remote: remote, command:"cd ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension}  ${pathwlBirc}/Deploy/${JOB_BASE_NAME}"
                             /*
                             sh """
