@@ -121,7 +121,7 @@ pipeline {
                     println "Stage Undeploy <<<<<< success >>>>>>"
                     script{
                          statusCode='success';
-                    }
+                    
                     /*
                     withCredentials([
                          file(
@@ -135,6 +135,7 @@ pipeline {
                              #Copiar el artefacto hacia el servidor weblogic.
                             scp -i ${KeyWlSshBirc} -P ${puertoWlSshBirc} Despliegue/${artifactNameWlBirc}.${extension} oracle@${serverWlSshBirc}:${pathwlBirc}/DeploysTemp/${BRANCH_NAME}
                          """*/
+                    }
                    }                   
                 }
                 unstable {
