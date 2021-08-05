@@ -60,9 +60,6 @@ pipeline {
                     remote.user = userName
                     remote.password = password
                     } 
-                    
-                    //sshCommand remote: remote, command: 'cd /u01/oracle/user_projects/domains/base_domain/bin && . ./setDomainEnv.sh ENV && java weblogic.Deployer -debug -remote -verbose -adminurl t3://172.17.0.3:9005 -username weblogic -password Bolivar2021* -stop -name FACTURAELECTRONICA'
-                    echo "${WEBLOGIC_CREDENTIAL_USR}"
                     sshCommand remote: remote, command: "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -stop -name $artifactNameWlBirc"
                     }
                 }
@@ -101,12 +98,7 @@ pipeline {
                        echo "Estatus Code Stage Anterior(Stop App): ${statusCode}";
                        if( statusCode == 'success' ){
                         sshCommand remote: remote, command: "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl $urlWlBirc -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -undeploy -name ${artifactNameWlBirc} -targets ${clusterWlBirc} -usenonexclusivelock -graceful -ignoresessions"
-                        /*
-                          sh """
-                              #Detener la aplicacion con el nombre del artefacto
-                              ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl $urlWlBirc -username ${userwlBirc} -password $passwlBirc -undeploy -name ${artifactNameWlBirc} -targets ${clusterWlBirc} -usenonexclusivelock -graceful -ignoresessions"
-                          """
-                        */
+
                        }
                        if( statusCode == 'failure' || statusCode == 'unstable' ){
                             autoCancelled = true
@@ -123,18 +115,6 @@ pipeline {
                     echo "Copy ear to Server Web Logic";
                     sshPut remote: remote, from: "Despliegue/${artifactNameWlBirc}.${extension}", into: "${pathwlBirc}/DeploysTemp/${BRANCH_NAME}"
 
-                   /*
-                   withCredentials([
-                        file(
-                            credentialsId: "${idKeyWlSshBirc}",
-                            variable: 'KeyWlSshBirc')
-                        ]){
-                        echo "Copy ear to Server Web Logic";
-                        sh """
-                            #Copiar el artefacto hacia el servidor weblogic.
-                            scp -i ${KeyWlSshBirc} -P ${puertoWlSshBirc} Despliegue/${artifactNameWlBirc}.${extension} oracle@${serverWlSshBirc}:${pathwlBirc}/DeploysTemp/${BRANCH_NAME}
-                        """*/
-                    
                    }
                   }
                unstable {
@@ -144,17 +124,12 @@ pipeline {
                    println "Stage Undeploy <<<<<< unstable >>>>>>"
                }
                failure {
-                    println "Stage Undeploy <<<<<< failure >>>>>>"
-                    //withCredentials([file(credentialsId: "${idKeyWlSshBirc}",variable: 'KeyWlSshBirc')]){    
+                    println "Stage Undeploy <<<<<< failure >>>>>>"   
                         script{
                             if( statusCode == 'success' ){
                                 echo "Start App";
                                 sshCommand remote: remote, command:"cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -start -name ${artifactNameWlBirc}"
-                                /*
-                                sh """
-                                    #Inicializa la aplicación como estaba en el stage anterior
-                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -start -name ${artifactNameWlBirc}"
-                                """*/
+                              
                             }                           
                             statusCode='failure';
                         }
@@ -170,26 +145,11 @@ pipeline {
            steps{
                //Manejo del status code de este stage
                catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
-                   /*
-                    withCredentials([
-                         file(
-                              credentialsId: "${idKeyWlSshBirc}",
-                              variable: 'KeyWlSshBirc'), 
-                         usernamePassword(
-                              credentialsId: "${idUserANDPassWlBirc}",
-                              usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
-                        ]){*/
                            script{
                                 echo "Estatus Code Stage Anterior (Undeploy): ${statusCode}";
                                 if( statusCode == 'success' ){
-                                    //Inicia la aplicacion con el nuevo artefacto
                                     sshCommand remote: remote, command:"cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -deploy -source ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension} -targets ${clusterWlBirc} -usenonexclusivelock"
 
-                                    /*
-                                    sh"""
-                                        #Inicia la aplicacion con el nuevo artefacto
-                                        ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -deploy -source ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension} -targets ${clusterWlBirc} -usenonexclusivelock"
-                                    """*/
                                 }
                                 if( statusCode == 'failure' || statusCode == 'unstable' ){
                                      autoCancelled = true
@@ -203,18 +163,12 @@ pipeline {
                     println "Stage Deploy <<<<<< success >>>>>>"
                     script{
                         statusCode='success';
-                    } 
-                    //withCredentials([file(credentialsId: "${idKeyWlSshBirc}",variable: 'KeyWlSshBirc')]){                    
+                    }                    
                             echo "backup ";
                             sshCommand remote: remote, command:"cd ${pathwlBirc}/Deploy/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension} ${artifactNameWlBirc}_`date +\"%Y-%m-%d-%Y_%H:%M\"`.${extension} && mv * ${pathwlBirc}/DeploysHistory/${JOB_BASE_NAME}"
+
                             sshCommand remote: remote, command:"cd ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension}  ${pathwlBirc}/Deploy/${JOB_BASE_NAME}"
-                            /*
-                            sh """
-                                #Backup del artefacto que se estaba ejecutando.
-                                ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${pathwlBirc}/Deploy/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension} ${artifactNameWlBirc}_`date +"%Y-%m-%d-%Y_%H:%M"`.${extension} && mv * ${pathwlBirc}/DeploysHistory/${JOB_BASE_NAME}"
-                                ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension}  ${pathwlBirc}/Deploy/${JOB_BASE_NAME}"
-                               
-                            """*/
+                        
                     }
                 unstable {
                     println "Stage Deploy <<<<<< unstable >>>>>>"
@@ -227,38 +181,24 @@ pipeline {
                     withCredentials([file(credentialsId: "${idKeyWlSshBirc}",variable: 'KeyWlSshBirc')]){//refactoring
                         script{
                             if( statusCode == 'success' ){
+
                                 echo "1. eleminar el contenido de la carpeta Temp, existe porque el Undeploy fue exitoso";
                                 sshCommand remote: remote, command:"cd rm -rf ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension}"
-                                /*
-                                sh """
-                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} 'rm -rf ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension}'
-                                """*/
+                               
                                 echo "2. desplegar de la carpeta deploy";
                                 sshCommand remote: remote, command:"cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -deploy -source ${pathwlBirc}/Deploy/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension} -targets ${clusterWlBirc} -usenonexclusivelock"
-                                /*
-                                sh """
-                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -deploy -source ${pathwlBirc}/Deploy/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension} -targets ${clusterWlBirc} -usenonexclusivelock"
-                                """*/
+                               
                                 echo "3. start a la aplicación";
                                 sshCommand remote: remote, command:"cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -start -name ${artifactNameWlBirc}"
-                                /*
-                                sh """
-                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -start -name ${artifactNameWlBirc}"
-                                """*/
+                               
                             }
                             if( statusCode == 'failure' || statusCode == 'unstable' ){
+
                                 echo "No es posible realizar el Deploy, se despliega la versión anterior.";
                                 sshCommand remote: remote, command:"cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -deploy -source ${pathwlBirc}/Deploy/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension} -targets ${clusterWlBirc} -usenonexclusivelock"
-                                /*
-                                sh """
-                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -deploy -source ${pathwlBirc}/Deploy/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension} -targets ${clusterWlBirc} -usenonexclusivelock"
-                                """*/
+
                                 echo "start aplicación";
                                 sshCommand remote: remote, command: "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -start -name ${artifactNameWlBirc}"
-                                /*
-                                sh """
-                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -start -name ${artifactNameWlBirc}"
-                                """*/
                             }
                             statusCode='failure';
                         }
@@ -266,8 +206,40 @@ pipeline {
                 }
             }
                 
-        }  
+        } 
+
     }
-}
+            post {         
+                always{
+                    echo "Enviar logs...";
+                      }
+                    cleanWs();
+                }
+                //Manejo de las execepciones con envio de notificacion por medio de slack  segun del status que coresponda.
+                success{
+                    script{
+                        if( "${BRANCH_NAME}" == "devops" || "${BRANCH_NAME}" == "qa" || "${BRANCH_NAME}" == "master" ){
+                            slackSend color: '#90FF33', message: "El despliegue en ${BRANCH_NAME} \n finalizo con estado: success  \n Puedes ver los logs en: ${env.BUILD_URL}console \n app: http://${serverWlSshBirc}:7001/FACTURAELECTRONICA/";
+        
+                        }
+                    }
+                }
+                unstable {
+                    script{
+                        if( "${BRANCH_NAME}" == "develop" || "${BRANCH_NAME}" == "qa" || "${BRANCH_NAME}" == "master" ){
+                            slackSend color: '#FFA500', message: "El despliegue en ${BRANCH_NAME} \n finalizo con estado: unstable \n Puedes ver los logs en: ${env.BUILD_URL}console \n app: http://${serverWlSshBirc}:7001/FACTURAELECTRONICA/";
+                            }
+                        }
+                }
+                failure{
+                    script{
+                        if( "${BRANCH_NAME}" == "develop" || "${BRANCH_NAME}" == "qa" || "${BRANCH_NAME}" == "master" ){
+                            slackSend color: '#FF4233', message: "El despliegue en ${BRANCH_NAME} \n finalizo con estado: failure  \n Puedes ver los logs en: ${env.BUILD_URL}console \n app: http://${serverWlSshBirc}:7001/FACTURAELECTRONICA/";
+                        }
+                    }
+        
+            }      
+    
+    }
 
 
