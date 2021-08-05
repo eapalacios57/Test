@@ -64,7 +64,6 @@ pipeline {
                     //sshCommand remote: remote, command: 'cd /u01/oracle/user_projects/domains/base_domain/bin && . ./setDomainEnv.sh ENV && java weblogic.Deployer -debug -remote -verbose -adminurl t3://172.17.0.3:9005 -username weblogic -password Bolivar2021* -stop -name FACTURAELECTRONICA'
                     echo "${WEBLOGIC_CREDENTIAL_USR}"
                     sshCommand remote: remote, command: "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -stop -name $artifactNameWlBirc"
-                    sshCommand remote: remote, command: 'ls -la'
                     }
                 }
             
@@ -161,9 +160,67 @@ pipeline {
                         }
                     }
                }              
-            }                    
-        }            
-    }    
-    
+            }
+            
+        stage('Deploy'){      
+           agent {
+                label 'master' 
+           }          
+           when { anyOf { branch 'devops'; branch 'qa'; branch 'stage'; branch 'master' } } //only qa
+           steps{
+               //Manejo del status code de este stage
+               catchError(buildResult: 'UNSTABLE', catchInterruptions: false, message: 'stage failed', stageResult: 'FAILURE') {
+                   /*
+                    withCredentials([
+                         file(
+                              credentialsId: "${idKeyWlSshBirc}",
+                              variable: 'KeyWlSshBirc'), 
+                         usernamePassword(
+                              credentialsId: "${idUserANDPassWlBirc}",
+                              usernameVariable: 'userwlBirc', passwordVariable: 'passwlBirc')
+                        ]){*/
+                           script{
+                                echo "Estatus Code Stage Anterior (Undeploy): ${statusCode}";
+                                if( statusCode == 'success' ){
+                                    //Inicia la aplicacion con el nuevo artefacto
+                                    sshCommand remote: remote, command:"${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -deploy -source ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension} -targets ${clusterWlBirc} -usenonexclusivelock"
+
+                                    /*
+                                    sh"""
+                                        #Inicia la aplicacion con el nuevo artefacto
+                                        ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -deploy -source ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME}/${artifactNameWlBirc}.${extension} -targets ${clusterWlBirc} -usenonexclusivelock"
+                                    """*/
+                                }
+                                if( statusCode == 'failure' || statusCode == 'unstable' ){
+                                     autoCancelled = true
+                                     error('Aborting the build.')
+                                }
+                           }
+                         }
+                    }
+            }
+            post {
+                success {
+                    println "Stage Deploy <<<<<< success >>>>>>"
+                    script{
+                        statusCode='success';
+                    } 
+                    //withCredentials([file(credentialsId: "${idKeyWlSshBirc}",variable: 'KeyWlSshBirc')]){                    
+                            echo "backup ";
+                            sshCommand remote: remote, command:"cd ${pathwlBirc}/Deploy/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension} ${artifactNameWlBirc}_`date +"%Y-%m-%d-%Y_%H:%M"`.${extension} && mv * ${pathwlBirc}/DeploysHistory/${JOB_BASE_NAME}"
+                            sshCommand remote: remote, command:"cd ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension}  ${pathwlBirc}/Deploy/${JOB_BASE_NAME}"
+                            /*
+                            sh """
+                                #Backup del artefacto que se estaba ejecutando.
+                                ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${pathwlBirc}/Deploy/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension} ${artifactNameWlBirc}_`date +"%Y-%m-%d-%Y_%H:%M"`.${extension} && mv * ${pathwlBirc}/DeploysHistory/${JOB_BASE_NAME}"
+                                ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${pathwlBirc}/DeploysTemp/${JOB_BASE_NAME} && mv ${artifactNameWlBirc}.${extension}  ${pathwlBirc}/Deploy/${JOB_BASE_NAME}"
+                               
+                            """*/
+                        }
+                }
+            }
+                              
+        }  
+  
 
 
