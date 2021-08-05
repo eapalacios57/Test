@@ -49,14 +49,14 @@ pipeline {
                 }
             }
         }
+        withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
+        remote.user = userName
+        remote.password = password 
         stage('Stop App'){
              agent {
                 label 'master' 
             }
-            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } }
-             withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
-             remote.user = userName
-             remote.password = password  
+            when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } } 
             steps{
                     
                     //sshCommand remote: remote, command: 'cd /u01/oracle/user_projects/domains/base_domain/bin && . ./setDomainEnv.sh ENV && java weblogic.Deployer -debug -remote -verbose -adminurl t3://172.17.0.3:9005 -username weblogic -password Bolivar2021* -stop -name FACTURAELECTRONICA'
