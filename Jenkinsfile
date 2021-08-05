@@ -49,13 +49,14 @@ pipeline {
                 }
             }
         }
-    withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
-        remote.user = userName
-        remote.password = password 
         stage('Stop App'){
              agent {
                 label 'master' 
             }
+        withCredentials([usernamePassword(credentialsId: 'ssh_server_weblogic', passwordVariable: 'password', usernameVariable: 'userName')]) {
+            remote.user = userName
+            remote.password = password 
+
             when { anyOf { branch 'develop'; branch 'stage'; branch 'master' } } 
             steps{
                     
