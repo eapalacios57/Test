@@ -66,9 +66,29 @@ pipeline {
                     sshCommand remote: remote, command: "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -stop -name $artifactNameWlBirc"
                     sshCommand remote: remote, command: 'ls -la'
                     }
-                   }
-
-            }
+                }
+            
+            post {
+                success {
+                    println "Stage Stop App <<<<<< success >>>>>>"
+                    script{
+                        statusCode='success';
+                    }
+                }
+                unstable {
+                    println "Stage Stop App <<<<<< unstable >>>>>>"    
+                    script{
+                        statusCode='unstable';
+                    }              
+                }
+                failure {
+                    println "Stage Stop App <<<<<< failure >>>>>>"
+                    script{
+                        statusCode='failure';
+                    }
+                }
+           }
         }
     }
+}
 
