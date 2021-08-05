@@ -121,9 +121,8 @@ pipeline {
                    println "Stage Undeploy <<<<<< success >>>>>>"
                    script{
                         statusCode='success';
+                    echo "Copy ear to Server Web Logic";
                     sshPut remote: remote, from: "Despliegue/${artifactNameWlBirc}.${extension}", into: "${pathwlBirc}/DeploysTemp/${BRANCH_NAME}"
-                   
-                   echo "Copy ear to Server Web Logic";
 
                    /*
                    withCredentials([
@@ -136,11 +135,35 @@ pipeline {
                             #Copiar el artefacto hacia el servidor weblogic.
                             scp -i ${KeyWlSshBirc} -P ${puertoWlSshBirc} Despliegue/${artifactNameWlBirc}.${extension} oracle@${serverWlSshBirc}:${pathwlBirc}/DeploysTemp/${BRANCH_NAME}
                         """*/
+                    
                    }
-                  }                   
-               }                    
-           }            
-        }    
-    }
+                  }
+               unstable {
+                   script{
+                        statusCode='unstable';
+                   } 
+                   println "Stage Undeploy <<<<<< unstable >>>>>>"
+               }
+               failure {
+                    println "Stage Undeploy <<<<<< failure >>>>>>"
+                    //withCredentials([file(credentialsId: "${idKeyWlSshBirc}",variable: 'KeyWlSshBirc')]){    
+                        script{
+                            if( statusCode == 'success' ){
+                                echo "Start App";
+                                sshCommand remote: remote, command:"cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${WEBLOGIC_CREDENTIAL_USR} -password ${WEBLOGIC_CREDENTIAL_PSW} -start -name ${artifactNameWlBirc}"
+                                /*
+                                sh """
+                                    #Inicializa la aplicación como estaba en el stage anterior
+                                    ssh -i ${KeyWlSshBirc} -p ${puertoWlSshBirc} oracle@${serverWlSshBirc} "cd ${domainWlBirc} && . ./setDomainEnv.sh ENV && java weblogic.Deployer -adminurl ${urlWlBirc} -username ${userwlBirc} -password ${passwlBirc} -start -name ${artifactNameWlBirc}"
+                                """*/
+                            }                           
+                            statusCode='failure';
+                        }
+                    }
+               }              
+            }                    
+        }            
+    }    
+    
 
 
