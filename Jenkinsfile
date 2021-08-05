@@ -129,7 +129,7 @@ pipeline {
                              variable: 'KeyWlSshBirc')
                          ]){*/
                         echo "Copy ear to Server Web Logic";
-                        sshPut remote: remote, from:"Despliegue/${artifactNameWlBirc}.${extension}", to:"${pathwlBirc}/DeploysTemp/${BRANCH_NAME}"
+                        //sshPut remote: remote, from:"Despliegue/${artifactNameWlBirc}.${extension}", to:"${pathwlBirc}/DeploysTemp/${BRANCH_NAME}"
                          /*
                          sh """
                              #Copiar el artefacto hacia el servidor weblogic.
